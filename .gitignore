@@ -1,0 +1,21 @@
+# Virtual environments
+venv/
+ekg_env/
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Data cache (too large, rebuild on server)
+data/
+*.npz.bak
+
+# Temporary files
+static/js/alarm.txt
+static/css/device.txt
+
+# OS
+Thumbs.db
+.DS_Store

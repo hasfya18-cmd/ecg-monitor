@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECG Remote Monitor — IoT</title>
+    <meta name="description"
+        content="Aplikasi monitoring EKG real-time dari IoT jarak jauh dengan klasifikasi CNN vs SVM">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo-pulse"></div>
+            <h1>ECG <span class="accent">Monitor</span></h1>
+            <span class="subtitle">IoT Long-Range Remote Monitoring</span>
+        </div>
+        <div class="header-right">
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+            <button class="btn-stream" id="btnAlarm" onclick="toggleAlarm()">
+                <span class="btn-icon">🔊</span>
+                <span class="btn-label">Sound: ON</span>
+            </button>
+            <button class="btn-stream" id="btnStream" onclick="toggleStream()">
+                <span class="btn-icon">⏸</span>
+                <span class="btn-label">Pause</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="dashboard">
+        <!-- ROW 1: ECG Waveform (full width) -->
+        <section class="card card-ecg">
+            <div class="card-header">
+                <h2>📡 Sinyal EKG Real-Time</h2>
+                <div class="ecg-meta">
+                    <span class="meta-tag" id="metaModel">Model: CNN</span>
+                    <span class="meta-tag" id="metaSNR">SNR: 30 dB</span>
+                    <span class="meta-tag" id="metaBeat">Beat: 0</span>
+                </div>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="ecgCanvas"></canvas>
+            </div>
+        </section>
+
+        <!-- ROW 2: Status Cards -->
+        <div class="status-row">
+            <!-- Heart Rate -->
+            <div class="card card-metric card-hr">
+                <div class="metric-icon pulse-anim">💓</div>
+                <div class="metric-value" id="heartRate">--</div>
+                <div class="metric-unit">BPM</div>
+                <div class="metric-label">Heart Rate</div>
+            </div>
+
+            <!-- Classification Status -->
+            <div class="card card-metric card-status" id="classCard">
+                <div class="metric-icon">🔍</div>
+                <div class="metric-value status-label" id="classLabel">Menunggu...</div>
+                <div class="metric-confidence" id="classConfidence">Confidence: --%</div>
+                <div class="metric-label" id="classModel">Model: CNN</div>
+            </div>
+
+            <!-- Stats -->
+            <div class="card card-metric card-stats">
+                <div class="metric-icon">📊</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="statTotal">0</span>
+                        <span class="stat-label">Total Beat</span>
+                    </div>
+                    <div class="stat-item stat-normal">
+                        <span class="stat-value" id="statNormal">0</span>
+                        <span class="stat-label">Normal</span>
+                    </div>
+                    <div class="stat-item stat-abnormal">
+                        <span class="stat-value" id="statAbnormal">0</span>
+                        <span class="stat-label">Abnormal</span>
+                    </div>
+                    <div class="stat-item stat-loss">
+                        <span class="stat-value" id="statLoss">0</span>
+                        <span class="stat-label">Packet Lost</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 3: Controls + Alert History -->
+        <div class="bottom-row">
+            <!-- Controls Panel -->
+            <section class="card card-controls">
+                <div class="card-header">
+                    <h2>⚙️ Kontrol Simulasi</h2>
+                </div>
+                <div class="controls-body">
+                    <!-- Model Selection -->
+                    <div class="control-group">
+                        <label class="control-label">Model Klasifikasi</label>
+                        <div class="toggle-group">
+                            <button class="toggle-btn active" id="btnCNN" onclick="setModel('CNN')">CNN</button>
+                            <button class="toggle-btn" id="btnSVM" onclick="setModel('SVM')">SVM</button>
+                        </div>
+                    </div>
+
+                    <!-- SNR Slider -->
+                    <div class="control-group">
+                        <label class="control-label">
+                            SNR Level (Noise)
+                            <span class="control-value" id="snrValue">30 dB</span>
+                        </label>
+                        <input type="range" class="slider" id="sliderSNR" min="5" max="40" value="30" step="1"
+                            oninput="updateSNR(this.value)">
+                        <div class="slider-labels">
+                            <span>Noisy (5dB)</span>
+                            <span>Clean (40dB)</span>
+                        </div>
+                    </div>
+
+                    <!-- Packet Loss Slider -->
+                    <div class="control-group">
+                        <label class="control-label">
+                            Network Packet Loss (IoT)
+                            <span class="control-value" id="lossValue">5%</span>
+                        </label>
+                        <input type="range" class="slider" id="sliderLoss" min="0" max="30" value="5" step="1"
+                            oninput="updatePacketLoss(this.value)">
+                        <div class="slider-labels">
+                            <span>Bagus (0%)</span>
+                            <span>Buruk (30%)</span>
+                        </div>
+                    </div>
+
+                    <!-- Speed Slider -->
+                    <div class="control-group">
+                        <label class="control-label">
+                            Kecepatan Streaming
+                            <span class="control-value" id="speedValue">Normal</span>
+                        </label>
+                        <input type="range" class="slider" id="sliderSpeed" min="3" max="15" value="8" step="1"
+                            oninput="updateSpeed(this.value)">
+                        <div class="slider-labels">
+                            <span>Cepat</span>
+                            <span>Lambat</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alert History -->
+            <section class="card card-alerts">
+                <div class="card-header">
+                    <h2>🚨 Riwayat Alert</h2>
+                    <span class="alert-count" id="alertCount">0</span>
+                </div>
+                <div class="alerts-body" id="alertsBody">
+                    <div class="alert-empty">
+                        Belum ada alert. Sistem sedang memantau...
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ROW 4: Simulated Patient Device -->
+        <section class="card card-device" id="patientDevice">
+            <div class="card-header">
+                <h2>⌚ Simulasi Perangkat Pasien (IoT)</h2>
+            </div>
+            <div class="device-body">
+                <div class="device-screen" id="deviceScreen">
+                    <div class="device-time" id="deviceTime">--:--</div>
+                    <div class="device-status">Memantau...</div>
+                    <div class="device-hr"><span class="pulse-anim">💚</span> <span id="deviceHrValue">--</span> bpm
+                    </div>
+                </div>
+                <div class="device-feedback">
+                    <p>Status Komunikasi 2 Arah:</p>
+                    <span class="badge-status badge-connected" id="feedbackStatus">Menunggu Alert...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROW 4: Info Panel -->
+        <section class="card card-info">
+            <div class="card-header">
+                <h2>ℹ️ Cara Kerja Sistem</h2>
+            </div>
+            <div class="info-body">
+                <div class="info-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>⌚ Akuisisi Sinyal (Perangkat IoT)</h3>
+                        <p>Smartwatch (atau Wearable EKG) merekam sinyal jantung pasien secara kontinu dari lokasinya
+                            masing-masing.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>🌐 Transmisi Internet/Cloud</h3>
+                        <p>Sinyal dikirim via jaringan nirkabel jarak jauh (Wi-Fi/Seluler) ke Cloud Server. Dalam
+                            simulasi ini, kita menguji ketahanan AI terhadap koneksi buruk (Noise dan Packet Loss).</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>🧠 Klasifikasi AI</h3>
+                        <p>Setiap detak jantung (beat) dianalisis menggunakan model AI — CNN (Deep Learning) atau SVM
+                            (Machine Learning) — untuk mendeteksi aritmia.</p>
+                    </div>
+                </div>
+                <div class="info-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>🖥️ Monitoring Real-Time</h3>
+                        <p>Hasil klasifikasi ditampilkan secara real-time di dashboard ini. Jika terdeteksi abnormal,
+                            sistem memberikan alert.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>Analisis Komparatif CNN vs SVM — Klasifikasi EKG Nirkabel | MIT-BIH Arrhythmia Database</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
