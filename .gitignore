@@ -11,6 +11,7 @@ __pycache__/
 # Data cache (too large, rebuild on server)
 data/
 *.npz.bak
+models/demo_data.npz
 
 # Temporary files
 static/js/alarm.txt

@@ -35,7 +35,7 @@ svm_model = joblib.load("models/svm_model.pkl")
 print("Models loaded!")
 
 print("Loading demo data...")
-demo = np.load("models/demo_data_small.npz")
+demo = np.load("models/demo_data.npz")
 X_demo = demo['X_all']
 y_demo = demo['y_all']
 print(f"Demo data: {len(y_demo)} beats ready")
