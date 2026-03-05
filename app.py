@@ -76,7 +76,9 @@ def index():
 def stream():
     """SSE endpoint — stream ECG beats one at a time."""
     def generate():
-        beat_index = 0
+        # Memulai dari index 1850 agar tidak menunggu 25 menit 
+        # (Aritmia yang berhasil dideteksi AI pertama kali ada di sekitar index 1898)
+        beat_index = 1850
         total_beats = len(X_demo)
         stats = {
             'total': 0,
