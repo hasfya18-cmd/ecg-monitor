@@ -48,10 +48,15 @@
                     <span class="meta-tag" id="metaModel">Model: CNN</span>
                     <span class="meta-tag" id="metaSNR">SNR: 30 dB</span>
                     <span class="meta-tag" id="metaBeat">Beat: 0</span>
+                    <span class="meta-tag meta-tag-time" id="metaInferenceTime">⏱ Inferensi: -- ms</span>
                 </div>
             </div>
             <div class="canvas-wrapper">
                 <canvas id="ecgCanvas"></canvas>
+                <div class="ecg-alert-overlay" id="ecgAlertOverlay" style="display: none;">
+                    <span class="ecg-alert-icon">⚠️</span>
+                    <span class="ecg-alert-text">ARITMIA TERDETEKSI</span>
+                </div>
             </div>
         </section>
 
@@ -97,6 +102,67 @@
             </div>
         </div>
 
+        <!-- ROW 2.5: CNN vs SVM Side-by-Side Comparison (Per-Beat) -->
+        <section class="card card-comparison" id="comparisonPanel">
+            <div class="card-header">
+                <h2>🔬 Perbandingan Per-Beat: CNN vs SVM</h2>
+                <span class="meta-tag meta-tag-live" id="compBeatNum">Beat: --</span>
+            </div>
+            <div class="comparison-body">
+                <!-- CNN Column -->
+                <div class="comp-column comp-cnn">
+                    <div class="comp-model-header">
+                        <span class="comp-model-icon">🧠</span>
+                        <span class="comp-model-name">CNN</span>
+                        <span class="comp-model-type">Deep Learning</span>
+                    </div>
+                    <div class="comp-prediction" id="compCnnPred">
+                        <span class="comp-pred-label">Menunggu...</span>
+                    </div>
+                    <div class="comp-metric">
+                        <span class="comp-metric-label">Confidence</span>
+                        <div class="comp-bar-wrapper">
+                            <div class="comp-bar comp-bar-cnn" id="compCnnBar" style="width: 0%"></div>
+                        </div>
+                        <span class="comp-metric-value" id="compCnnConf">--%</span>
+                    </div>
+                    <div class="comp-metric">
+                        <span class="comp-metric-label">Waktu Inferensi</span>
+                        <span class="comp-metric-value comp-time" id="compCnnTime">-- ms</span>
+                    </div>
+                </div>
+
+                <!-- VS Divider -->
+                <div class="comp-vs">
+                    <span class="comp-vs-text">VS</span>
+                    <div class="comp-winner" id="compWinner">--</div>
+                </div>
+
+                <!-- SVM Column -->
+                <div class="comp-column comp-svm">
+                    <div class="comp-model-header">
+                        <span class="comp-model-icon">📐</span>
+                        <span class="comp-model-name">SVM</span>
+                        <span class="comp-model-type">Machine Learning</span>
+                    </div>
+                    <div class="comp-prediction" id="compSvmPred">
+                        <span class="comp-pred-label">Menunggu...</span>
+                    </div>
+                    <div class="comp-metric">
+                        <span class="comp-metric-label">Confidence</span>
+                        <div class="comp-bar-wrapper">
+                            <div class="comp-bar comp-bar-svm" id="compSvmBar" style="width: 0%"></div>
+                        </div>
+                        <span class="comp-metric-value" id="compSvmConf">--%</span>
+                    </div>
+                    <div class="comp-metric">
+                        <span class="comp-metric-label">Waktu Inferensi</span>
+                        <span class="comp-metric-value comp-time" id="compSvmTime">-- ms</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- ROW 3: Controls + Alert History -->
         <div class="bottom-row">
             <!-- Controls Panel -->
@@ -105,6 +171,17 @@
                     <h2>⚙️ Kontrol Simulasi</h2>
                 </div>
                 <div class="controls-body">
+                    <!-- Data Source Selection -->
+                    <div class="control-group">
+                        <label class="control-label">Sumber Data</label>
+                        <div class="toggle-group">
+                            <button class="toggle-btn active" id="btnSourceDemo"
+                                onclick="setSource('demo')">Simulasi</button>
+                            <button class="toggle-btn" id="btnSourceLive" onclick="setSource('live')">Smartwatch
+                                (Live)</button>
+                        </div>
+                    </div>
+
                     <!-- Model Selection -->
                     <div class="control-group">
                         <label class="control-label">Model Klasifikasi</label>
@@ -125,6 +202,12 @@
                         <div class="slider-labels">
                             <span>Noisy (5dB)</span>
                             <span>Clean (40dB)</span>
+                        </div>
+                        <div class="snr-quality" id="snrQuality">
+                            <div class="snr-quality-bar">
+                                <div class="snr-quality-fill" id="snrQualityFill" style="width: 75%"></div>
+                            </div>
+                            <span class="snr-quality-desc" id="snrQualityDesc">📶 Koneksi Wi-Fi Indoor — Sinyal Baik</span>
                         </div>
                     </div>
 
@@ -155,6 +238,25 @@
                             <span>Lambat</span>
                         </div>
                     </div>
+
+                        <!-- Manual Warning -->
+                    <div class="control-group" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <label class="control-label" style="color:#fecdd3;">Kirim Intervensi Medis</label>
+                        <select id="warningType" class="control-select">
+                            <option value="Tarik Napas & Istirahat">Tarik Napas & Istirahat</option>
+                            <option value="Segera Minum Obat Jantung">Segera Minum Obat Jantung</option>
+                            <option value="Hubungi Rumah Sakit / UGD">Hubungi Rumah Sakit / UGD</option>
+                        </select>
+                        <div id="warningIndicator" style="margin-top: 10px; font-size: 0.8rem; color: #a5b4fc; background: rgba(79, 70, 229, 0.1); padding: 8px; border-radius: 6px; border: 1px dashed rgba(79, 70, 229, 0.3); line-height: 1.4;">
+                            💡 <b>Status:</b> Menunggu data HR...
+                        </div>
+                        <button class="btn-primary" onclick="triggerManualWarning()" style="margin-top: 10px; width: 100%;">Kirim ke Smartwatch</button>
+                    </div>
+
+                    <!-- Export CSV -->
+                    <div class="control-group" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <button class="btn-export" onclick="exportCSV()">📥 Export Data ke CSV</button>
+                    </div>
                 </div>
             </section>
 
@@ -172,10 +274,50 @@
             </section>
         </div>
 
-        <!-- ROW 4: Simulated Patient Device -->
+        <!-- ROW 4: Benchmark Table -->
+        <section class="card card-benchmark">
+            <div class="card-header">
+                <h2>📊 Perbandingan Real-Time: CNN vs SVM</h2>
+            </div>
+            <div class="benchmark-body">
+                <table class="benchmark-table">
+                    <thead>
+                        <tr>
+                            <th>Metrik</th>
+                            <th style="color:#60a5fa;">🧠 CNN</th>
+                            <th style="color:#a78bfa;">📐 SVM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Akurasi</td>
+                            <td id="bm-cnn-acc">--</td>
+                            <td id="bm-svm-acc">--</td>
+                        </tr>
+                        <tr>
+                            <td>F1-Score</td>
+                            <td id="bm-cnn-f1">--</td>
+                            <td id="bm-svm-f1">--</td>
+                        </tr>
+                        <tr>
+                            <td>Waktu Eksekusi (avg)</td>
+                            <td id="bm-cnn-ms">--</td>
+                            <td id="bm-svm-ms">--</td>
+                        </tr>
+                        <tr>
+                            <td>Total Beat Diklasifikasi</td>
+                            <td id="bm-cnn-count">0</td>
+                            <td id="bm-svm-count">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ROW 5: Simulated Patient Device -->
         <section class="card card-device" id="patientDevice">
             <div class="card-header">
-                <h2>⌚ Simulasi Perangkat Pasien (IoT)</h2>
+                <h2>⌚ Status Tautan Smartwatch (IoT)</h2>
             </div>
             <div class="device-body">
                 <div class="device-screen" id="deviceScreen">
@@ -183,10 +325,28 @@
                     <div class="device-status">Memantau...</div>
                     <div class="device-hr"><span class="pulse-anim">💚</span> <span id="deviceHrValue">--</span> bpm
                     </div>
+                    <div class="device-action" id="deviceAction" style="display: none; margin-top: 15px;">
+                        <p id="deviceActionText" style="font-size: 0.85rem; margin-bottom: 10px; color: #fecdd3; font-weight: bold;"></p>
+                        <button class="btn-acknowledge" onclick="acknowledgeWarning()">SAYA MENGERTI</button>
+                    </div>
                 </div>
                 <div class="device-feedback">
                     <p>Status Komunikasi 2 Arah:</p>
                     <span class="badge-status badge-connected" id="feedbackStatus">Menunggu Alert...</span>
+
+                    <div class="live-instructions" id="liveInstructions"
+                        style="display: none; margin-top: 20px; text-align: left; padding: 15px; background: rgba(34, 211, 238, 0.05); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0; color: #22d3ee; font-size: 0.9rem;">Integrasi Live (Ngrok)</h4>
+                        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 8px 0;">Untuk menghubungkan smartwatch
+                            sungguhan ke web app ini:</p>
+                        <ol style="font-size: 0.85rem; color: #94a3b8; margin: 0; padding-left: 20px;">
+                            <li>Jalankan <code>ngrok http 5000</code> di terminal.</li>
+                            <li>Arahkan request POST dari smartwatch/aplikasi ke
+                                <code>[URL_NGROK]/api/ecg_device</code>.</li>
+                            <li>Kirim payload JSON: <code>{"values": [0.5, 0.6, ...]}</code> berisi minimal 187 sample.
+                            </li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </section>
@@ -232,6 +392,15 @@
             </div>
         </section>
     </main>
+
+    <!-- Disclaimer Banner -->
+    <div class="dashboard" style="padding-top: 0;">
+        <div class="disclaimer-banner">
+            ⚠️ <strong>DISCLAIMER:</strong> Sistem ini merupakan <strong>simulasi untuk keperluan penelitian / skripsi</strong> 
+            dan <strong>BUKAN</strong> alat diagnosa medis resmi. Hasil klasifikasi AI tidak boleh digunakan sebagai dasar 
+            keputusan klinis tanpa pengawasan tenaga medis profesional.
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="app-footer">
