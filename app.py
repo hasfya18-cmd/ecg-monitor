@@ -135,10 +135,11 @@ print("All data loaded!")
 # ============================================================
 # PER-PATIENT TELEGRAM REGISTRATIONS (SQLite Database)
 # ============================================================
-DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ecg_data.db')
+DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'ecg_data.db')
 
 def db_init():
     """Initialize SQLite database with required tables."""
+    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS telegram_registrations 
