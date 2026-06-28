@@ -1,5 +1,5 @@
 // ============================================================
-// ECG Real-Time Monitor — Frontend Logic (Enhanced v2)
+// ECG Real-Time Monitor — Frontend Logic (Per-Patient v3)
 // ============================================================
 
 // --- STATE ---
@@ -12,7 +12,9 @@ const appState = {
     source: 'demo',
     packetLossCount: 0,
     alertCount: 0,
-    lastPrediction: -1,   // -1 = unknown, 0 = normal, 1 = abnormal
+    lastPrediction: -1,
+    selectedPatient: null,
+    patientsList: [],
 };
 
 let pendingWarning = false;
@@ -23,16 +25,48 @@ let recordedData = [];
 
 // --- BENCHMARK TRACKING ---
 let benchmarkStats = {
-    cnn: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0 },
-    svm: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0 }
+    cnn: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0, history: [] },
+    svm: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0, history: [] }
 };
+
+let comparisonChart = null;
 
 // --- ECG CANVAS ---
 const canvas = document.getElementById('ecgCanvas');
 const ctx = canvas.getContext('2d');
-let beatBuffer = [];        // All beat points to draw
-const MAX_POINTS = 1800;    // How many points visible on screen
-let drawX = 0;              // Current draw position
+
+// --- CIRCULAR BUFFER for ECG waveform (O(1) push/evict) ---
+class CircularBuffer {
+    constructor(maxSize) {
+        this.maxSize = maxSize;
+        this.buffer = new Float32Array(maxSize);
+        this.head = 0;   // Next write position
+        this.count = 0;   // Current number of elements
+    }
+    push(value) {
+        this.buffer[this.head] = value;
+        this.head = (this.head + 1) % this.maxSize;
+        if (this.count < this.maxSize) this.count++;
+    }
+    get(index) {
+        if (index >= this.count) return 0;
+        const start = (this.head - this.count + this.maxSize) % this.maxSize;
+        return this.buffer[(start + index) % this.maxSize];
+    }
+    get length() { return this.count; }
+    clear() { this.head = 0; this.count = 0; }
+    toArray() {
+        const arr = new Float32Array(this.count);
+        for (let i = 0; i < this.count; i++) arr[i] = this.get(i);
+        return arr;
+    }
+}
+
+const MAX_POINTS = 1800;
+const ecgBuffer = new CircularBuffer(MAX_POINTS);
+// Legacy reference for compatibility
+let beatBuffer = ecgBuffer;
+let drawX = 0;
 
 function resizeCanvas() {
     const wrapper = canvas.parentElement;
@@ -49,7 +83,7 @@ function drawECG() {
     const midY = H / 2;
 
     // Background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
     // --- Medical-grade EKG grid (red/pink like real ECG paper) ---
@@ -57,7 +91,7 @@ function drawECG() {
     const bigGrid = 50;   // Large squares (5mm equivalent)
 
     // Small grid lines
-    ctx.strokeStyle = 'rgba(220, 60, 60, 0.08)';
+    ctx.strokeStyle = 'rgba(220, 60, 60, 0.12)';
     ctx.lineWidth = 0.5;
     for (let x = 0; x < W; x += smallGrid) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
@@ -67,7 +101,7 @@ function drawECG() {
     }
 
     // Large grid lines
-    ctx.strokeStyle = 'rgba(220, 60, 60, 0.18)';
+    ctx.strokeStyle = 'rgba(220, 60, 60, 0.25)';
     ctx.lineWidth = 1;
     for (let x = 0; x < W; x += bigGrid) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
@@ -77,7 +111,7 @@ function drawECG() {
     }
 
     // Center baseline
-    ctx.strokeStyle = 'rgba(220, 60, 60, 0.3)';
+    ctx.strokeStyle = 'rgba(220, 60, 60, 0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, midY);
@@ -85,7 +119,7 @@ function drawECG() {
     ctx.stroke();
 
     // Scale label
-    ctx.fillStyle = 'rgba(220, 60, 60, 0.4)';
+    ctx.fillStyle = 'rgba(220, 60, 60, 0.5)';
     ctx.font = '9px JetBrains Mono, monospace';
     ctx.fillText('25 mm/s | 10 mm/mV', 8, H - 6);
 
@@ -99,21 +133,21 @@ function drawECG() {
     // Draw glow effect
     if (appState.lastPrediction === 1) {
         // ABNORMAL — red waveform
-        ctx.shadowColor = 'rgba(239, 68, 68, 0.6)';
-        ctx.shadowBlur = 10;
-        ctx.strokeStyle = '#ef4444';
+        ctx.shadowColor = 'rgba(220, 38, 38, 0.4)';
+        ctx.shadowBlur = 6;
+        ctx.strokeStyle = '#dc2626';
     } else {
-        // NORMAL — cyan waveform
-        ctx.shadowColor = 'rgba(34, 211, 238, 0.5)';
-        ctx.shadowBlur = 8;
-        ctx.strokeStyle = '#22d3ee';
+        // NORMAL — teal waveform
+        ctx.shadowColor = 'rgba(0, 114, 152, 0.3)';
+        ctx.shadowBlur = 4;
+        ctx.strokeStyle = '#007298';
     }
     ctx.lineWidth = 2;
     ctx.beginPath();
 
-    for (let i = 0; i < beatBuffer.length && i < MAX_POINTS; i++) {
+    for (let i = 0; i < ecgBuffer.length && i < MAX_POINTS; i++) {
         const x = (i / MAX_POINTS) * W;
-        const y = midY - beatBuffer[i] * scale;
+        const y = midY - ecgBuffer.get(i) * scale;
 
         if (i === 0) {
             ctx.moveTo(x, y);
@@ -128,8 +162,8 @@ function drawECG() {
     drawPQRSTAnnotations(W, H, midY, scale);
 
     // Draw sweep line (current position indicator)
-    if (beatBuffer.length < MAX_POINTS) {
-        const sweepX = (beatBuffer.length / MAX_POINTS) * W;
+    if (ecgBuffer.length < MAX_POINTS) {
+        const sweepX = (ecgBuffer.length / MAX_POINTS) * W;
         const gradient = ctx.createLinearGradient(sweepX - 30, 0, sweepX, 0);
         gradient.addColorStop(0, 'transparent');
         gradient.addColorStop(1, 'rgba(34, 211, 238, 0.6)');
@@ -146,12 +180,15 @@ function drawECG() {
 
 // --- P-QRS-T ANNOTATION ---
 function drawPQRSTAnnotations(W, H, midY, scale) {
-    if (beatBuffer.length < 187) return;
+    if (ecgBuffer.length < 187) return;
 
     // Only annotate the last full beat (187 samples)
     const beatLen = 187;
-    const startIdx = Math.max(0, beatBuffer.length - beatLen);
-    const beat = beatBuffer.slice(startIdx, startIdx + beatLen);
+    const startIdx = Math.max(0, ecgBuffer.length - beatLen);
+    const beat = [];
+    for (let i = startIdx; i < startIdx + beatLen && i < ecgBuffer.length; i++) {
+        beat.push(ecgBuffer.get(i));
+    }
 
     // Find QRS peak (max absolute value, typically around index 80-120)
     let maxVal = -Infinity;
@@ -196,12 +233,26 @@ function drawPQRSTAnnotations(W, H, midY, scale) {
 requestAnimationFrame(drawECG);
 
 // --- ADD BEAT TO BUFFER ---
+let lastValidBeat = null;  // Track last valid beat for interpolation
+
 function addBeatToBuffer(beatData) {
     for (let i = 0; i < beatData.length; i++) {
-        beatBuffer.push(beatData[i]);
+        ecgBuffer.push(beatData[i]);
     }
-    while (beatBuffer.length > MAX_POINTS) {
-        beatBuffer.shift();
+}
+
+// Packet loss interpolation: use last valid beat with attenuation
+function addInterpolatedBeat(interpolatedData) {
+    if (interpolatedData && interpolatedData.length > 0) {
+        // Attenuate interpolated data to visually distinguish it
+        for (let i = 0; i < interpolatedData.length; i++) {
+            ecgBuffer.push(interpolatedData[i] * 0.6);
+        }
+    } else {
+        // No previous beat available — insert flat line
+        for (let i = 0; i < 30; i++) {
+            ecgBuffer.push(0);
+        }
     }
 }
 
@@ -221,7 +272,11 @@ function connectSSE() {
 
     eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        handleBeatData(data);
+        if (data.type === 'patient_change') {
+            handlePatientChange(data);
+        } else {
+            handleBeatData(data);
+        }
     };
 
     eventSource.onerror = () => {
@@ -231,28 +286,43 @@ function connectSSE() {
 }
 
 // --- HANDLE INCOMING BEAT DATA ---
-const CONFIDENCE_THRESHOLD = 0.70;
+const CONFIDENCE_THRESHOLD = 0.60;
 
 function handleBeatData(data) {
     updateConnectionStatus(true);
 
     if (data.type === 'packet_loss') {
         appState.packetLossCount++;
-        document.getElementById('statLoss').textContent = appState.packetLossCount;
+        const statLossEl = document.getElementById('statLoss');
+        if (statLossEl) statLossEl.textContent = appState.packetLossCount;
 
-        const flatBeat = new Array(30).fill(0);
-        addBeatToBuffer(flatBeat);
+        // Use interpolated data from backend, or fall back to flat line
+        addInterpolatedBeat(data.interpolated_data);
 
         addAlert({
             time: new Date().toLocaleTimeString('id-ID'),
-            msg: `Packet lost (Beat #${data.beat_index})`,
+            msg: `Packet lost (Beat #${data.beat_index})${data.interpolated_data ? ' — Interpolated' : ''}`,
             type: 'packet_loss'
         });
+    }
 
-        // Update connection quality color
+    if (data.type === 'heartbeat') {
         updateConnectionQuality();
         return;
     }
+
+    if (data.type === 'end') {
+        const statusEl = document.getElementById('analysisStatus');
+        if (statusEl) {
+            statusEl.textContent = '✅ Analisis Selesai';
+            statusEl.className = 'analysis-status-pill ready';
+        }
+        console.log('Stream ended. Analysis complete.');
+        return;
+    }
+
+    // Defensive check: if no beat_data, skip processing
+    if (!data.beat_data) return;
 
     // Normal beat data
     const beat = data.beat_data;
@@ -306,23 +376,41 @@ function handleBeatData(data) {
     }
 
     // Update stats
-    document.getElementById('statTotal').textContent = stats.total;
-    document.getElementById('statNormal').textContent = stats.normal;
-    document.getElementById('statAbnormal').textContent = stats.abnormal;
+    const statTotalEl = document.getElementById('statTotal');
+    if (statTotalEl) statTotalEl.textContent = stats.total;
+    const statNormalEl = document.getElementById('statNormal');
+    if (statNormalEl) statNormalEl.textContent = stats.normal;
+    const statAbnormalEl = document.getElementById('statAbnormal');
+    if (statAbnormalEl) statAbnormalEl.textContent = stats.abnormal;
 
     // Update meta tags
-    document.getElementById('metaModel').textContent = `Model: ${data.model}`;
-    document.getElementById('metaSNR').textContent = `SNR: ${data.snr_db} dB`;
-    document.getElementById('metaBeat').textContent = `Beat: ${data.beat_index}`;
+    const metaModelEl = document.getElementById('metaModel');
+    if (metaModelEl) metaModelEl.textContent = `Model: ${data.model}`;
+    const metaSNREl = document.getElementById('metaSNR');
+    if (metaSNREl) metaSNREl.textContent = `SNR: ${data.snr_db} dB`;
+    const metaBeatEl = document.getElementById('metaBeat');
+    if (metaBeatEl) metaBeatEl.textContent = `Beat: ${data.beat_index}`;
 
     // --- BENCHMARK UPDATE ---
     if (data.benchmark) {
+        const statusEl = document.getElementById('analysisStatus');
+        if (statusEl && !statusEl.classList.contains('ready')) {
+            statusEl.textContent = '⏱️ Sedang Menganalisis...';
+            statusEl.className = 'analysis-status-pill processing';
+        }
         updateBenchmark(data.benchmark, data.true_label);
         updateSideBySide(data.benchmark, data.beat_index);
 
         // Update meta inference time (for selected model)
         const chosenMs = data.model === 'CNN' ? data.benchmark.cnn_ms : data.benchmark.svm_ms;
         document.getElementById('metaInferenceTime').textContent = `\u23f1 Inferensi: ${chosenMs} ms`;
+    } else if (data.type === 'end') {
+        const statusEl = document.getElementById('analysisStatus');
+        if (statusEl) {
+            statusEl.textContent = '✅ Analisis Selesai';
+            statusEl.className = 'analysis-status-pill ready';
+        }
+        console.log('Stream ended. Analysis complete.');
     }
 
     // --- ECG ALERT OVERLAY ---
@@ -411,10 +499,33 @@ function updateBenchmark(bm, trueLabel) {
             else if (svmVal > cnnVal) svmEl.classList.add('benchmark-winner');
         }
     });
+
+    // Update Chart.js if initialized
+    if (typeof comparisonChart !== 'undefined' && comparisonChart) {
+        ['cnn', 'svm'].forEach((m, idx) => {
+            const s = benchmarkStats[m];
+            const accVal = s.total > 0 ? ((s.correct / s.total) * 100) : 0;
+            
+            // Push to history (max 30 points for smooth curve)
+            s.history.push(parseFloat(accVal.toFixed(1)));
+            if (s.history.length > 30) s.history.shift();
+            
+            comparisonChart.data.datasets[idx].data = [...s.history];
+        });
+        
+        // Update labels (1, 2, 3...)
+        const maxLen = Math.max(benchmarkStats.cnn.history.length, benchmarkStats.svm.history.length);
+        comparisonChart.data.labels = Array.from({length: maxLen}, (_, i) => i + 1);
+        
+        comparisonChart.update('none');
+    }
 }
 
 // --- SIDE-BY-SIDE CNN vs SVM COMPARISON (PER-BEAT) ---
 function updateSideBySide(bm, beatIndex) {
+    // Deprecated: UI elements removed in the new Tab layout.
+    return;
+    
     // Beat number
     const beatNumEl = document.getElementById('compBeatNum');
     if (beatNumEl) beatNumEl.textContent = `Beat: ${beatIndex}`;
@@ -665,13 +776,18 @@ function simulateDeviceFeedback(hr) {
 
     if (pendingWarning) return;
 
-    hrVal.textContent = hr;
+    if (hrVal) hrVal.textContent = hr;
 
-    screen.className = 'device-screen alert-mode';
-    screen.querySelector('.device-status').innerHTML = '⚠️ PERINGATAN<br>ARITMIA!';
+    if (screen) {
+        screen.className = 'device-screen alert-mode';
+        const statusText = screen.querySelector('.device-status');
+        if (statusText) statusText.innerHTML = '⚠️ PERINGATAN<br>ARITMIA!';
+    }
 
-    status.className = 'badge-status badge-alerting';
-    status.innerHTML = 'Menerima Sinyal Bahaya dari AI...';
+    if (status) {
+        status.className = 'badge-status badge-alerting';
+        status.innerHTML = 'Menerima Sinyal Bahaya dari AI...';
+    }
 
     if (navigator.vibrate) {
         navigator.vibrate([200, 100, 200, 100, 500]);
@@ -798,23 +914,7 @@ function updateConnectionStatus(connected) {
     }
 }
 
-// --- CONTROLS ---
-function toggleStream() {
-    appState.isStreaming = !appState.isStreaming;
-    const btn = document.getElementById('btnStream');
 
-    if (appState.isStreaming) {
-        btn.className = 'btn-stream';
-        btn.querySelector('.btn-icon').textContent = '⏸';
-        btn.querySelector('.btn-label').textContent = 'Pause';
-    } else {
-        btn.className = 'btn-stream paused';
-        btn.querySelector('.btn-icon').textContent = '▶';
-        btn.querySelector('.btn-label').textContent = 'Resume';
-    }
-
-    updateSettings({ is_streaming: appState.isStreaming });
-}
 
 function setModel(model) {
     appState.model = model;
@@ -860,7 +960,7 @@ function setSource(source) {
 
     document.getElementById('liveInstructions').style.display = source === 'live' ? 'block' : 'none';
 
-    beatBuffer = [];
+    ecgBuffer.clear();
 
     updateSettings({ source: source });
 }
@@ -891,8 +991,295 @@ async function updateSettings(settings) {
     }
 }
 
+// --- PATIENT SELECTION ---
+async function loadPatientList() {
+    try {
+        const res = await fetch('/api/patients');
+        const data = await res.json();
+        appState.patientsList = data.patients;
+        appState.selectedPatient = data.selected;
+        renderPatientGrid(data.patients, data.selected);
+        updatePatientMeta(data.selected);
+    } catch (e) {
+        console.error('Failed to load patients:', e);
+    }
+}
+
+function renderPatientGrid(patients, selectedId) {
+    const grid = document.getElementById('patientsGrid');
+    if (!grid) return;
+    
+    // Minimal update: check if content changed to avoid flicker
+    grid.innerHTML = '';
+    patients.forEach(p => {
+        const card = document.createElement('div');
+        const isActive = p.record_id === selectedId;
+        card.className = 'patient-card' + (isActive ? ' active' : '');
+        card.id = 'patient-' + p.record_id;
+        card.onclick = () => selectPatient(p.record_id);
+        
+        const statusClass = p.current_status === 'Abnormal' ? 'rate-high' : 'rate-low';
+        
+        card.innerHTML = `
+            <div class="patient-id">${p.name}</div>
+            <div class="patient-info">${p.total_beats} beat | ${p.sex || 'N/A'}</div>
+            <div class="patient-info" style="font-size: 0.7rem; color: var(--text-secondary);">${(p.arrhythmia_labels || []).join(', ') || 'Normal'}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+async function selectPatient(recordId) {
+    if (recordId === appState.selectedPatient) return;
+    try {
+        await fetch('/api/select_patient', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ record_id: recordId })
+        });
+        // Update UI
+        document.querySelectorAll('.patient-card').forEach(c => c.classList.remove('active'));
+        const el = document.getElementById('patient-' + recordId);
+        if (el) el.classList.add('active');
+        appState.selectedPatient = recordId;
+        updatePatientMeta(recordId);
+        resetDashboardStats();
+    } catch (e) {
+        console.error('Failed to select patient:', e);
+    }
+}
+
+function handlePatientChange(data) {
+    appState.selectedPatient = data.record_id;
+    updatePatientMeta(data.record_id);
+    resetDashboardStats();
+}
+
+function updatePatientMeta(recordId) {
+    const p = appState.patientsList.find(x => x.record_id === recordId);
+    const meta = document.getElementById('metaPatient');
+    if (meta && p) meta.textContent = `Pasien: ${p.name || recordId}`;
+
+    const details = document.getElementById('patientMetaDetails');
+    if (details && p) {
+        const arrTypes = p.arrhythmia_labels && p.arrhythmia_labels.length > 0 ? p.arrhythmia_labels.join(', ') : 'Normal (Tidak Ada)';
+        details.innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <p><strong>Nama Pasien:</strong> ${p.name || p.record_id}</p>
+                    <p><strong>Umur:</strong> ${p.age || 'Tidak diketahui'} tahun</p>
+                    <p><strong>Jenis Kelamin:</strong> ${p.sex || 'Tidak diketahui'}</p>
+                </div>
+                <div>
+                    <p><strong>Total Beat Tersimpan:</strong> ${p.total}</p>
+                    <p><strong>Diagnosis Aritmia:</strong> <span style="color: var(--abnormal-color); font-weight: bold;">${arrTypes}</span></p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function resetDashboardStats() {
+    ecgBuffer.clear();
+    recordedData = [];
+    appState.packetLossCount = 0;
+    appState.alertCount = 0;
+    benchmarkStats = {
+        cnn: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0, history: [] },
+        svm: { correct: 0, total: 0, totalMs: 0, tp: 0, fp: 0, fn: 0, tn: 0, history: [] }
+    };
+    const analysisStatus = document.getElementById('analysisStatus');
+    if (analysisStatus) {
+        analysisStatus.textContent = 'Menunggu data...';
+        analysisStatus.className = 'analysis-status-pill';
+    }
+    ['statTotal', 'statNormal', 'statAbnormal', 'statLoss', 'alertCount', 'heartRate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = id === 'heartRate' ? '--' : '0';
+    });
+    const classLabel = document.getElementById('classLabel');
+    if (classLabel) classLabel.innerHTML = 'Menunggu...';
+    const alertsBody = document.getElementById('alertsBody');
+    if (alertsBody) alertsBody.innerHTML = '<div class="alert-empty">Pasien baru dipilih. Memulai monitoring...</div>';
+    ['bm-cnn-acc','bm-svm-acc','bm-cnn-f1','bm-svm-f1','bm-cnn-ms','bm-svm-ms'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = '--';
+    });
+    ['bm-cnn-count','bm-svm-count'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.textContent = '0';
+    });
+}
+
 // --- INIT ---
 window.addEventListener('DOMContentLoaded', () => {
     loadAlertsFromStorage();
+    loadPatientList();
     connectSSE();
+    loadTelegramConfig();
+    
+    // Polling for simultaneous patient status updates (simulated real-time)
+    setInterval(loadPatientList, 2000);
 });
+
+// ============================================================
+// UI NAVIGATION (TABS)
+// ============================================================
+function switchTab(tabId) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    
+    // Show selected
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById('btn-' + tabId).classList.add('active');
+    
+    // Resize canvas if we switch to the detail tab (because it was display: none before)
+    if (tabId === 'tab-detail') {
+        resizeCanvas();
+    }
+    
+    // Handle Chart.js initialization or resize when compare tab is shown
+    if (tabId === 'tab-compare') {
+        setTimeout(() => {
+            if (!comparisonChart) {
+                console.log('Initializing chart on tab switch...');
+                initChart();
+            } else {
+                console.log('Resizing existing chart...');
+                comparisonChart.resize();
+            }
+            refreshComparisonChart();
+        }, 150); // Increased delay to ensure DOM is ready
+    }
+}
+
+/**
+ * Manually populates the comparison chart with current benchmarkStats.
+ */
+function refreshComparisonChart() {
+    if (typeof comparisonChart !== 'undefined' && comparisonChart) {
+        ['cnn', 'svm'].forEach((m, idx) => {
+            comparisonChart.data.datasets[idx].data = [...benchmarkStats[m].history];
+        });
+        const maxLen = Math.max(benchmarkStats.cnn.history.length, benchmarkStats.svm.history.length);
+        comparisonChart.data.labels = Array.from({length: maxLen}, (_, i) => i + 1);
+        comparisonChart.update();
+    }
+}
+
+// Patient card click navigates to Detail tab
+async function selectPatientAndView(recordId) {
+    await selectPatient(recordId);
+    switchTab('tab-detail');
+}
+
+// ============================================================
+// CHART.JS INTEGRATION (TAB 3)
+// ============================================================
+
+function initChart() {
+    const ctxC = document.getElementById('comparisonChart');
+    if (!ctxC) return;
+    
+    comparisonChart = new Chart(ctxC, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CNN Accuracy (%)',
+                    borderColor: '#007298',
+                    backgroundColor: 'rgba(0, 114, 152, 0.1)',
+                    data: [],
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'SVM Accuracy (%)',
+                    borderColor: '#d97706',
+                    backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                    data: [],
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    max: 105,
+                    title: { display: true, text: 'Akurasi Kumulatif (%)' }
+                },
+                x: {
+                    title: { display: true, text: 'Jumlah Beat' }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+}
+
+// ============================================================
+// TELEGRAM CONFIGURATION
+// ============================================================
+async function loadTelegramConfig() {
+    try {
+        const res = await fetch('/api/telegram_config');
+        const data = await res.json();
+        if (document.getElementById('tgToken')) document.getElementById('tgToken').value = data.telegram_token || '';
+        if (document.getElementById('tgChatId')) document.getElementById('tgChatId').value = data.telegram_chat_id || '';
+        if (document.getElementById('tgApiUrl')) document.getElementById('tgApiUrl').value = data.telegram_api_url || '';
+    } catch(e) {
+        console.error('Failed to load telegram config');
+    }
+}
+
+async function saveTelegramConfig() {
+    const token = document.getElementById('tgToken').value;
+    const chatId = document.getElementById('tgChatId').value;
+    const apiUrl = document.getElementById('tgApiUrl') ? document.getElementById('tgApiUrl').value : '';
+    
+    try {
+        await fetch('/api/telegram_config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegram_token: token, telegram_chat_id: chatId, telegram_api_url: apiUrl })
+        });
+        
+        const statusEl = document.getElementById('tgSaveStatus');
+        statusEl.style.opacity = '1';
+        setTimeout(() => { statusEl.style.opacity = '0'; }, 3000);
+    } catch (e) {
+        alert('Gagal menyimpan konfigurasi Telegram');
+    }
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+function toggleStream() {
+    appState.isStreaming = !appState.isStreaming;
+    const btn = document.getElementById('btnStream');
+    if (btn) {
+        if (appState.isStreaming) {
+            btn.querySelector('.btn-icon').textContent = '⏸';
+            btn.querySelector('.btn-label').textContent = 'Pause';
+            btn.className = 'btn-stream';
+        } else {
+            btn.querySelector('.btn-icon').textContent = '▶️';
+            btn.querySelector('.btn-label').textContent = 'Resume';
+            btn.className = 'btn-stream paused';
+        }
+    }
+    
+    // Tell backend about stream state
+    fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_streaming: appState.isStreaming })
+    });
+}

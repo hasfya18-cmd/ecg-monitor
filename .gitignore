@@ -11,7 +11,7 @@ __pycache__/
 # Data cache (too large, rebuild on server)
 data/
 *.npz.bak
-models/demo_data.npz
+# models/demo_data.npz
 
 # Temporary files
 static/js/alarm.txt
@@ -20,3 +20,14 @@ static/css/device.txt
 # OS
 Thumbs.db
 .DS_Store
+
+# Agent Scratch
+scratch/
+
+# Hugging Face deployment scripts and logs
+upload_to_hf.py
+restart_space.py
+check_hf.py
+get_hf_status.py
+get_hf_logs.py
+

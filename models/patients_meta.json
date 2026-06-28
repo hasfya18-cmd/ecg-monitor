@@ -1,0 +1,1531 @@
+[
+  {
+    "record_id": "JS11550",
+    "rank": 1,
+    "total": 13,
+    "normal": 12,
+    "abnormal": 1,
+    "rate": 7.6923076923076925,
+    "age": 88,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "JEB",
+      "ST",
+      "AT"
+    ]
+  },
+  {
+    "record_id": "JS22122",
+    "rank": 2,
+    "total": 12,
+    "normal": 6,
+    "abnormal": 6,
+    "rate": 50.0,
+    "age": 89,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AVRT",
+      "SB",
+      "JEB",
+      "SA",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS01307",
+    "rank": 3,
+    "total": 15,
+    "normal": 7,
+    "abnormal": 8,
+    "rate": 53.333333333333336,
+    "age": 79,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS08073",
+    "rank": 4,
+    "total": 9,
+    "normal": 0,
+    "abnormal": 9,
+    "rate": 100.0,
+    "age": 74,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VFW",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS11531",
+    "rank": 5,
+    "total": 11,
+    "normal": 8,
+    "abnormal": 3,
+    "rate": 27.27272727272727,
+    "age": 75,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "2AVB1",
+      "SB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS11534",
+    "rank": 6,
+    "total": 11,
+    "normal": 1,
+    "abnormal": 10,
+    "rate": 90.9090909090909,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "JEB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11539",
+    "rank": 7,
+    "total": 10,
+    "normal": 10,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 68,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "AT",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11540",
+    "rank": 8,
+    "total": 14,
+    "normal": 0,
+    "abnormal": 14,
+    "rate": 100.0,
+    "age": 87,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "AF",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11541",
+    "rank": 9,
+    "total": 12,
+    "normal": 9,
+    "abnormal": 3,
+    "rate": 25.0,
+    "age": 78,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "AF",
+      "ST",
+      "AT"
+    ]
+  },
+  {
+    "record_id": "JS11560",
+    "rank": 10,
+    "total": 14,
+    "normal": 13,
+    "abnormal": 1,
+    "rate": 7.142857142857142,
+    "age": 68,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST",
+      "AT"
+    ]
+  },
+  {
+    "record_id": "JS11561",
+    "rank": 11,
+    "total": 12,
+    "normal": 10,
+    "abnormal": 2,
+    "rate": 16.666666666666664,
+    "age": 80,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST",
+      "AT"
+    ]
+  },
+  {
+    "record_id": "JS11564",
+    "rank": 12,
+    "total": 9,
+    "normal": 1,
+    "abnormal": 8,
+    "rate": 88.88888888888889,
+    "age": 59,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB",
+      "VEB"
+    ]
+  },
+  {
+    "record_id": "JS11566",
+    "rank": 13,
+    "total": 13,
+    "normal": 2,
+    "abnormal": 11,
+    "rate": 84.61538461538461,
+    "age": 77,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB",
+      "VEB"
+    ]
+  },
+  {
+    "record_id": "JS11567",
+    "rank": 14,
+    "total": 10,
+    "normal": 0,
+    "abnormal": 10,
+    "rate": 100.0,
+    "age": 77,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11569",
+    "rank": 15,
+    "total": 12,
+    "normal": 6,
+    "abnormal": 6,
+    "rate": 50.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS11657",
+    "rank": 16,
+    "total": 9,
+    "normal": 8,
+    "abnormal": 1,
+    "rate": 11.11111111111111,
+    "age": 65,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "JEB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11658",
+    "rank": 17,
+    "total": 8,
+    "normal": 4,
+    "abnormal": 4,
+    "rate": 50.0,
+    "age": 12,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "JEB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11751",
+    "rank": 18,
+    "total": 9,
+    "normal": 5,
+    "abnormal": 4,
+    "rate": 44.44444444444444,
+    "age": 83,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "JEB",
+      "1AVB",
+      "SB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11815",
+    "rank": 19,
+    "total": 10,
+    "normal": 7,
+    "abnormal": 3,
+    "rate": 30.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "VEB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS12461",
+    "rank": 20,
+    "total": 9,
+    "normal": 7,
+    "abnormal": 2,
+    "rate": 22.22222222222222,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "SB",
+      "JEB",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS12477",
+    "rank": 21,
+    "total": 11,
+    "normal": 9,
+    "abnormal": 2,
+    "rate": 18.181818181818183,
+    "age": 62,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "VEB",
+      "3AVB",
+      "JEB",
+      "AF"
+    ]
+  },
+  {
+    "record_id": "JS20109",
+    "rank": 22,
+    "total": 13,
+    "normal": 1,
+    "abnormal": 12,
+    "rate": 92.3076923076923,
+    "age": 83,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "SB",
+      "AT",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS20114",
+    "rank": 23,
+    "total": 12,
+    "normal": 0,
+    "abnormal": 12,
+    "rate": 100.0,
+    "age": 77,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "ST",
+      "AT",
+      "VFW"
+    ]
+  },
+  {
+    "record_id": "JS20130",
+    "rank": 24,
+    "total": 12,
+    "normal": 8,
+    "abnormal": 4,
+    "rate": 33.33333333333333,
+    "age": 78,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AT",
+      "SB",
+      "SA",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS20131",
+    "rank": 25,
+    "total": 10,
+    "normal": 10,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 74,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AT",
+      "SB",
+      "SA",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS21096",
+    "rank": 26,
+    "total": 8,
+    "normal": 4,
+    "abnormal": 4,
+    "rate": 50.0,
+    "age": 89,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AT",
+      "SB",
+      "JEB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS22121",
+    "rank": 27,
+    "total": 9,
+    "normal": 0,
+    "abnormal": 9,
+    "rate": 100.0,
+    "age": 82,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "VEB",
+      "JEB",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS00090",
+    "rank": 28,
+    "total": 8,
+    "normal": 8,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 88,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS00800",
+    "rank": 29,
+    "total": 9,
+    "normal": 8,
+    "abnormal": 1,
+    "rate": 11.11111111111111,
+    "age": 61,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS01579",
+    "rank": 30,
+    "total": 15,
+    "normal": 11,
+    "abnormal": 4,
+    "rate": 26.666666666666668,
+    "age": 77,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS01678",
+    "rank": 31,
+    "total": 9,
+    "normal": 7,
+    "abnormal": 2,
+    "rate": 22.22222222222222,
+    "age": 24,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS01856",
+    "rank": 32,
+    "total": 11,
+    "normal": 1,
+    "abnormal": 10,
+    "rate": 90.9090909090909,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS02212",
+    "rank": 33,
+    "total": 11,
+    "normal": 6,
+    "abnormal": 5,
+    "rate": 45.45454545454545,
+    "age": 78,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "3AVB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS02488",
+    "rank": 34,
+    "total": 12,
+    "normal": 0,
+    "abnormal": 12,
+    "rate": 100.0,
+    "age": 65,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS02708",
+    "rank": 35,
+    "total": 10,
+    "normal": 0,
+    "abnormal": 10,
+    "rate": 100.0,
+    "age": 83,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS03091",
+    "rank": 36,
+    "total": 10,
+    "normal": 9,
+    "abnormal": 1,
+    "rate": 10.0,
+    "age": 86,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS03313",
+    "rank": 37,
+    "total": 10,
+    "normal": 8,
+    "abnormal": 2,
+    "rate": 20.0,
+    "age": 64,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS03471",
+    "rank": 38,
+    "total": 10,
+    "normal": 4,
+    "abnormal": 6,
+    "rate": 60.0,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "JEB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS03609",
+    "rank": 39,
+    "total": 12,
+    "normal": 10,
+    "abnormal": 2,
+    "rate": 16.666666666666664,
+    "age": 63,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS04175",
+    "rank": 40,
+    "total": 11,
+    "normal": 8,
+    "abnormal": 3,
+    "rate": 27.27272727272727,
+    "age": 73,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS04387",
+    "rank": 41,
+    "total": 15,
+    "normal": 10,
+    "abnormal": 5,
+    "rate": 33.33333333333333,
+    "age": 89,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS04429",
+    "rank": 42,
+    "total": 15,
+    "normal": 15,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 76,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS04575",
+    "rank": 43,
+    "total": 15,
+    "normal": 10,
+    "abnormal": 5,
+    "rate": 33.33333333333333,
+    "age": 67,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "VPB",
+      "VET"
+    ]
+  },
+  {
+    "record_id": "JS04871",
+    "rank": 44,
+    "total": 9,
+    "normal": 9,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 76,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS04915",
+    "rank": 45,
+    "total": 7,
+    "normal": 0,
+    "abnormal": 7,
+    "rate": 100.0,
+    "age": 83,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "2AVB",
+      "AVB"
+    ]
+  },
+  {
+    "record_id": "JS05148",
+    "rank": 46,
+    "total": 15,
+    "normal": 0,
+    "abnormal": 15,
+    "rate": 100.0,
+    "age": 83,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS05472",
+    "rank": 47,
+    "total": 9,
+    "normal": 0,
+    "abnormal": 9,
+    "rate": 100.0,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "JEB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS05552",
+    "rank": 48,
+    "total": 11,
+    "normal": 0,
+    "abnormal": 11,
+    "rate": 100.0,
+    "age": 72,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS05963",
+    "rank": 49,
+    "total": 13,
+    "normal": 0,
+    "abnormal": 13,
+    "rate": 100.0,
+    "age": 80,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS06105",
+    "rank": 50,
+    "total": 14,
+    "normal": 0,
+    "abnormal": 14,
+    "rate": 100.0,
+    "age": 81,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS06113",
+    "rank": 51,
+    "total": 10,
+    "normal": 0,
+    "abnormal": 10,
+    "rate": 100.0,
+    "age": 50,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "2AVB",
+      "AVB"
+    ]
+  },
+  {
+    "record_id": "JS06926",
+    "rank": 52,
+    "total": 16,
+    "normal": 12,
+    "abnormal": 4,
+    "rate": 25.0,
+    "age": 89,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS07246",
+    "rank": 53,
+    "total": 13,
+    "normal": 9,
+    "abnormal": 4,
+    "rate": 30.76923076923077,
+    "age": 75,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS07391",
+    "rank": 54,
+    "total": 12,
+    "normal": 10,
+    "abnormal": 2,
+    "rate": 16.666666666666664,
+    "age": 69,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS07663",
+    "rank": 55,
+    "total": 10,
+    "normal": 0,
+    "abnormal": 10,
+    "rate": 100.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS07726",
+    "rank": 56,
+    "total": 10,
+    "normal": 10,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 59,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08436",
+    "rank": 57,
+    "total": 9,
+    "normal": 8,
+    "abnormal": 1,
+    "rate": 11.11111111111111,
+    "age": 85,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08553",
+    "rank": 58,
+    "total": 11,
+    "normal": 4,
+    "abnormal": 7,
+    "rate": 63.63636363636363,
+    "age": 81,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08558",
+    "rank": 59,
+    "total": 12,
+    "normal": 5,
+    "abnormal": 7,
+    "rate": 58.333333333333336,
+    "age": 81,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "ST",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08747",
+    "rank": 60,
+    "total": 11,
+    "normal": 0,
+    "abnormal": 11,
+    "rate": 100.0,
+    "age": 63,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08795",
+    "rank": 61,
+    "total": 16,
+    "normal": 8,
+    "abnormal": 8,
+    "rate": 50.0,
+    "age": 63,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS08841",
+    "rank": 62,
+    "total": 9,
+    "normal": 7,
+    "abnormal": 2,
+    "rate": 22.22222222222222,
+    "age": 75,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS09044",
+    "rank": 63,
+    "total": 9,
+    "normal": 9,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 68,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS09577",
+    "rank": 64,
+    "total": 9,
+    "normal": 7,
+    "abnormal": 2,
+    "rate": 22.22222222222222,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "2AVB1"
+    ]
+  },
+  {
+    "record_id": "JS09816",
+    "rank": 65,
+    "total": 17,
+    "normal": 12,
+    "abnormal": 5,
+    "rate": 29.411764705882355,
+    "age": 86,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "ST",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS09928",
+    "rank": 66,
+    "total": 11,
+    "normal": 9,
+    "abnormal": 2,
+    "rate": 18.181818181818183,
+    "age": 84,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AT",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS10250",
+    "rank": 67,
+    "total": 12,
+    "normal": 6,
+    "abnormal": 6,
+    "rate": 50.0,
+    "age": 85,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AT",
+      "APB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS10256",
+    "rank": 68,
+    "total": 11,
+    "normal": 8,
+    "abnormal": 3,
+    "rate": 27.27272727272727,
+    "age": 64,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AT",
+      "APB",
+      "VPB"
+    ]
+  },
+  {
+    "record_id": "JS10680",
+    "rank": 69,
+    "total": 14,
+    "normal": 13,
+    "abnormal": 1,
+    "rate": 7.142857142857142,
+    "age": 78,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS10686",
+    "rank": 70,
+    "total": 12,
+    "normal": 0,
+    "abnormal": 12,
+    "rate": 100.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "AF",
+      "3AVB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS11532",
+    "rank": 71,
+    "total": 9,
+    "normal": 6,
+    "abnormal": 3,
+    "rate": 33.33333333333333,
+    "age": 84,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "2AVB1",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11533",
+    "rank": 72,
+    "total": 11,
+    "normal": 0,
+    "abnormal": 11,
+    "rate": 100.0,
+    "age": 67,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "VEB"
+    ]
+  },
+  {
+    "record_id": "JS11535",
+    "rank": 73,
+    "total": 6,
+    "normal": 1,
+    "abnormal": 5,
+    "rate": 83.33333333333334,
+    "age": 59,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS11536",
+    "rank": 74,
+    "total": 18,
+    "normal": 0,
+    "abnormal": 18,
+    "rate": 100.0,
+    "age": 76,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "ST",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS11537",
+    "rank": 75,
+    "total": 9,
+    "normal": 9,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "SB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11538",
+    "rank": 76,
+    "total": 13,
+    "normal": 7,
+    "abnormal": 6,
+    "rate": 46.15384615384615,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "SB",
+      "1AVB",
+      "2AVB"
+    ]
+  },
+  {
+    "record_id": "JS11542",
+    "rank": 77,
+    "total": 12,
+    "normal": 0,
+    "abnormal": 12,
+    "rate": 100.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "1AVB",
+      "ST",
+      "AF"
+    ]
+  },
+  {
+    "record_id": "JS11545",
+    "rank": 78,
+    "total": 15,
+    "normal": 0,
+    "abnormal": 15,
+    "rate": 100.0,
+    "age": 68,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11546",
+    "rank": 79,
+    "total": 13,
+    "normal": 9,
+    "abnormal": 4,
+    "rate": 30.76923076923077,
+    "age": 76,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11549",
+    "rank": 80,
+    "total": 15,
+    "normal": 0,
+    "abnormal": 15,
+    "rate": 100.0,
+    "age": 61,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11551",
+    "rank": 81,
+    "total": 11,
+    "normal": 2,
+    "abnormal": 9,
+    "rate": 81.81818181818183,
+    "age": 86,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "JEB"
+    ]
+  },
+  {
+    "record_id": "JS11552",
+    "rank": 82,
+    "total": 10,
+    "normal": 1,
+    "abnormal": 9,
+    "rate": 90.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11553",
+    "rank": 83,
+    "total": 16,
+    "normal": 13,
+    "abnormal": 3,
+    "rate": 18.75,
+    "age": 79,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11554",
+    "rank": 84,
+    "total": 12,
+    "normal": 1,
+    "abnormal": 11,
+    "rate": 91.66666666666666,
+    "age": 82,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11558",
+    "rank": 85,
+    "total": 14,
+    "normal": 1,
+    "abnormal": 13,
+    "rate": 92.85714285714286,
+    "age": 63,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AT",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS11559",
+    "rank": 86,
+    "total": 12,
+    "normal": 11,
+    "abnormal": 1,
+    "rate": 8.333333333333332,
+    "age": 46,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "AT",
+      "1AVB",
+      "APB"
+    ]
+  },
+  {
+    "record_id": "JS11562",
+    "rank": 87,
+    "total": 14,
+    "normal": 0,
+    "abnormal": 14,
+    "rate": 100.0,
+    "age": 83,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11565",
+    "rank": 88,
+    "total": 11,
+    "normal": 0,
+    "abnormal": 11,
+    "rate": 100.0,
+    "age": 89,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11570",
+    "rank": 89,
+    "total": 11,
+    "normal": 0,
+    "abnormal": 11,
+    "rate": 100.0,
+    "age": 53,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11571",
+    "rank": 90,
+    "total": 14,
+    "normal": 11,
+    "abnormal": 3,
+    "rate": 21.428571428571427,
+    "age": 83,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11572",
+    "rank": 91,
+    "total": 14,
+    "normal": 0,
+    "abnormal": 14,
+    "rate": 100.0,
+    "age": 77,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11573",
+    "rank": 92,
+    "total": 12,
+    "normal": 10,
+    "abnormal": 2,
+    "rate": 16.666666666666664,
+    "age": 80,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "ST"
+    ]
+  },
+  {
+    "record_id": "JS11574",
+    "rank": 93,
+    "total": 9,
+    "normal": 3,
+    "abnormal": 6,
+    "rate": 66.66666666666666,
+    "age": 83,
+    "sex": "Female",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11575",
+    "rank": 94,
+    "total": 12,
+    "normal": 11,
+    "abnormal": 1,
+    "rate": 8.333333333333332,
+    "age": 85,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SA"
+    ]
+  },
+  {
+    "record_id": "JS11577",
+    "rank": 95,
+    "total": 10,
+    "normal": 9,
+    "abnormal": 1,
+    "rate": 10.0,
+    "age": 62,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11578",
+    "rank": 96,
+    "total": 8,
+    "normal": 8,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 46,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11579",
+    "rank": 97,
+    "total": 8,
+    "normal": 8,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 74,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11580",
+    "rank": 98,
+    "total": 13,
+    "normal": 5,
+    "abnormal": 8,
+    "rate": 61.53846153846154,
+    "age": 85,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11581",
+    "rank": 99,
+    "total": 9,
+    "normal": 5,
+    "abnormal": 4,
+    "rate": 44.44444444444444,
+    "age": 59,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  },
+  {
+    "record_id": "JS11582",
+    "rank": 100,
+    "total": 9,
+    "normal": 9,
+    "abnormal": 0,
+    "rate": 0.0,
+    "age": 84,
+    "sex": "Male",
+    "arrhythmia_labels": [
+      "APB",
+      "1AVB",
+      "SB"
+    ]
+  }
+]

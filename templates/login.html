@@ -1,170 +1,1212 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — ECG Remote Monitor</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
+    <title>ECG Monitoring — Secure Portal</title>
+    <meta name="description" content="Medical staff portal for remote ECG monitoring system — Login or Register">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ========== RESET & BASE ========== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { min-height: 100%; overflow-y: auto; }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0e1a;
-            color: #f1f5f9;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image:
-                radial-gradient(ellipse at 20% 50%, rgba(56, 189, 248, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow: hidden;
+            background: #060c1f;
         }
 
-        .login-card {
-            background: rgba(17, 24, 39, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.12);
-            border-radius: 20px;
-            backdrop-filter: blur(20px);
-            padding: 48px 40px;
+        /* ========== ANIMATED BACKGROUND ========== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 60% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+            animation: bgDrift 20s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+        @keyframes bgDrift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-3%, 2%) rotate(3deg); }
+        }
+
+        /* Floating particles */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatParticle linear infinite;
+        }
+        @keyframes floatParticle {
+            0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+        }
+
+        /* ========== MAIN CONTAINER ========== */
+        .container {
+            position: relative;
+            z-index: 10;
             width: 100%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            max-width: 960px;
+            min-height: 620px;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(40px) saturate(1.4);
+            -webkit-backdrop-filter: blur(40px) saturate(1.4);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.03),
+                0 32px 64px -16px rgba(0, 0, 0, 0.5),
+                0 0 120px -20px rgba(37, 99, 235, 0.15);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+            transition: box-shadow 0.6s;
+        }
+        .container:hover {
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.05),
+                0 32px 64px -16px rgba(0, 0, 0, 0.5),
+                0 0 160px -20px rgba(37, 99, 235, 0.25);
         }
 
-        .login-logo {
+        /* ========== FORM PANELS ========== */
+        .forms-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+        .form-panel {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            padding: 2.75rem 2.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.65s cubic-bezier(0.68, -0.15, 0.27, 1.15),
+                        opacity 0.5s ease;
+            overflow-y: auto;
+        }
+        .form-panel::-webkit-scrollbar { width: 4px; }
+        .form-panel::-webkit-scrollbar-track { background: transparent; }
+        .form-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* Login panel */
+        .panel-login {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        /* Sign-up panel */
+        .panel-signup {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        /* Active states */
+        .container.signup-mode .panel-login {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        .container.signup-mode .panel-signup {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        /* ========== OVERLAY / SLIDING PANEL ========== */
+        .overlay-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 3rem 2.5rem;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #2563eb 100%);
+            transition: background 0.6s ease;
+        }
+
+        .container.signup-mode .overlay-panel {
+            background: linear-gradient(135deg, #2563eb 0%, #1e3a5f 60%, #0f172a 100%);
+        }
+
+        /* Overlay decorative elements */
+        .overlay-circles {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; height: 100%;
+            pointer-events: none;
+        }
+        .ov-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .ov-circle.c1 { width: 600px; height: 600px; animation: ovPulse 6s ease-in-out infinite; }
+        .ov-circle.c2 { width: 450px; height: 450px; border-color: rgba(255,255,255,0.1); animation: ovPulse 6s ease-in-out 1s infinite; }
+        .ov-circle.c3 { width: 300px; height: 300px; border-color: rgba(255,255,255,0.04); animation: ovPulse 6s ease-in-out 2s infinite; }
+        @keyframes ovPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.04); }
+        }
+
+        .overlay-glow {
+            position: absolute;
+            width: 280px; height: 280px;
+            background: rgba(37, 99, 235, 0.3);
+            filter: blur(80px);
+            border-radius: 50%;
+            bottom: -60px; right: -60px;
+            animation: glowPulse 4s ease-in-out infinite;
+        }
+        .overlay-glow.top {
+            bottom: auto; right: auto;
+            top: -60px; left: -60px;
+            background: rgba(99, 102, 241, 0.2);
+        }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.15); }
+        }
+
+        /* Overlay content layers — toggle visibility */
+        .overlay-content {
+            position: relative;
+            z-index: 10;
+            color: #fff;
+            transition: transform 0.65s cubic-bezier(0.68, -0.15, 0.27, 1.15),
+                        opacity 0.5s ease;
+        }
+        .overlay-content.ov-login {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .overlay-content.ov-signup {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: calc(100% - 5rem);
+            transform: translate(-50%, -30%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .container.signup-mode .overlay-content.ov-login {
+            transform: translateY(40px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .container.signup-mode .overlay-content.ov-signup {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .overlay-icon-badge {
+            width: 56px; height: 56px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            animation: badgePulse 3s ease-in-out infinite;
+        }
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.3); }
+            50% { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+        }
+        .overlay-icon-badge svg { width: 28px; height: 28px; color: #fff; }
+
+        .overlay-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+        }
+        .overlay-desc {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.65);
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ECG heartbeat line */
+        .ecg-line {
+            width: 180px;
+            height: 40px;
+            margin: 0 auto 2rem auto;
+            opacity: 0.4;
+        }
+        .ecg-line svg { width: 100%; height: 100%; }
+        .ecg-line path {
+            fill: none;
+            stroke: #60a5fa;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: ecgDraw 3s linear infinite;
+        }
+        @keyframes ecgDraw {
+            0% { stroke-dashoffset: 400; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .btn-switch {
+            padding: 14px 36px;
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-radius: 50px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-switch::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        .btn-switch:hover::before { left: 100%; }
+        .btn-switch:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+
+        /* ========== FORM STYLES ========== */
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+        }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #2563eb, #6366f1);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            animation: brandGlow 3s ease-in-out infinite;
+        }
+        @keyframes brandGlow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3); }
+            50% { box-shadow: 0 8px 30px rgba(37, 99, 235, 0.5), 0 0 60px rgba(37, 99, 235, 0.15); }
+        }
+        .brand-icon svg { width: 24px; height: 24px; color: #fff; }
+        .brand-name {
+            font-size: 1rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        .form-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            margin-bottom: 1.75rem;
+        }
+
+        /* Messages */
+        .msg-error {
+            background: rgba(220, 38, 38, 0.1);
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.825rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: shakeIn 0.5s ease;
+        }
+        .msg-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.825rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeSlideIn 0.5s ease;
+        }
+        @keyframes shakeIn {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60% { transform: translateX(6px); }
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Field groups */
+        .field-group {
+            margin-bottom: 1.15rem;
+        }
+        .field-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            padding-left: 4px;
+            margin-bottom: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper svg.input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px; height: 18px;
+            color: #475569;
+            transition: color 0.3s, transform 0.3s;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            outline: none;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+        .input-wrapper select {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+        .input-wrapper select option {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .input-wrapper input::placeholder { color: #475569; }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15), 0 0 20px rgba(37, 99, 235, 0.08);
+            background: rgba(15, 23, 42, 0.7);
+        }
+        .input-wrapper input:focus ~ svg.input-icon,
+        .input-wrapper select:focus ~ svg.input-icon {
+            color: #60a5fa;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Password toggle */
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #475569;
+            z-index: 3;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .toggle-password:hover { color: #94a3b8; }
+        .toggle-password svg { width: 18px; height: 18px; }
+
+        /* Two-column row for compact fields */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 0.5rem;
         }
-
-        .logo-dot {
-            width: 14px;
-            height: 14px;
-            background: #22d3ee;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
-            animation: pulse 1.5s ease-in-out infinite;
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 200%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.6s;
         }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.6; }
+        .btn-primary:hover::before { left: 100%; }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(37, 99, 235, 0.35);
         }
+        .btn-primary:active { transform: translateY(0) scale(0.98); }
+        .btn-primary svg { width: 18px; height: 18px; transition: transform 0.3s; }
+        .btn-primary:hover svg { transform: translateX(4px); }
 
-        .login-logo h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
-
-        .login-logo .accent { color: #22d3ee; }
-
-        .login-subtitle {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 6px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 16px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            color: #f8fafc;
-            border-radius: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .form-group input:focus {
-            border-color: #3b82f6;
-        }
-
-        .btn-login {
+        .btn-google {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 1.25rem 0;
+        }
+        .divider span.line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148,163,184,0.2), transparent);
+        }
+        .divider span.text {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            white-space: nowrap;
+        }
+
+        /* Remember / Checkbox */
+        .remember-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0.25rem 0 0.5rem 0;
+        }
+        .remember-row input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: #2563eb;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .remember-row label {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Footer security badge */
+        .security-badge {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .security-badge .badge-icon {
+            padding: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .security-badge .badge-icon svg { width: 16px; height: 16px; color: #10b981; }
+        .security-badge .badge-text-top {
+            font-size: 9px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+        .security-badge .badge-text-bottom {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        /* ========== GOOGLE MOCK MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(6, 12, 31, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+            text-align: center;
+            animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
+        }
+        .mock-warning {
+            font-size: 0.8rem;
+            color: #d97706;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+            background: rgba(217, 119, 6, 0.1);
+            border: 1px solid rgba(217, 119, 6, 0.2);
+            border-radius: 12px;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 500;
+        }
+        .mock-account-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            color: inherit;
+        }
+        .mock-account-btn:hover {
+            background: rgba(37, 99, 235, 0.1);
+            border-color: rgba(37, 99, 235, 0.3);
+        }
+        .mock-avatar {
+            width: 34px; height: 34px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .mock-account-name { font-size: 0.85rem; font-weight: 700; color: #e2e8f0; }
+        .mock-account-email { font-size: 0.75rem; color: #64748b; }
+        .mock-custom-section {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 1rem;
+            margin-top: 0.75rem;
+        }
+        .mock-custom-section label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .mock-custom-row {
+            display: flex;
+            gap: 8px;
+        }
+        .mock-custom-row input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .mock-custom-row input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .mock-custom-row button {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: #fff;
             border: none;
             border-radius: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
+            font-size: 0.85rem;
+            font-weight: 600;
             cursor: pointer;
+            font-family: 'Inter', sans-serif;
             transition: all 0.2s;
-            margin-top: 8px;
+        }
+        .mock-custom-row button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+        .btn-modal-cancel {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: color 0.2s;
+        }
+        .btn-modal-cancel:hover { color: #94a3b8; }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+                min-height: auto;
+            }
+            .overlay-panel { display: none; }
+            .form-panel { position: relative; padding: 2rem 1.5rem; }
+            .panel-signup { display: none; }
+            .container.signup-mode .panel-login { display: none; transform: none; opacity: 1; }
+            .container.signup-mode .panel-signup { display: flex; transform: none; opacity: 1; position: relative; }
+            /* Mobile toggle links */
+            .mobile-toggle { display: block !important; }
+        }
+        @media (min-width: 769px) {
+            .mobile-toggle { display: none !important; }
         }
 
-        .btn-login:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        /* Utility */
+        .mobile-toggle {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.825rem;
+            color: #64748b;
+        }
+        .mobile-toggle a {
+            color: #60a5fa;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .mobile-toggle a:hover { text-decoration: underline; }
+
+        /* Loading animation on buttons */
+        .btn-primary.loading {
+            pointer-events: none;
+            opacity: 0.75;
+        }
+        .btn-primary.loading::after {
+            content: '';
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Entrance animation */
+        .container {
+            animation: containerIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes containerIn {
+            from { opacity: 0; transform: scale(0.92) translateY(30px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .error-msg {
-            color: #ef4444;
-            font-size: 0.82rem;
-            margin-top: 12px;
-            min-height: 20px;
-        }
-
-        .disclaimer {
-            margin-top: 24px;
-            font-size: 0.72rem;
-            color: #475569;
-            line-height: 1.5;
+        /* Google button container for real GSI */
+        .google-btn-wrapper {
+            min-height: 44px;
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
-
 <body>
-    <div class="login-card">
-        <div class="login-logo">
-            <div class="logo-dot"></div>
-            <h1>ECG <span class="accent">Monitor</span></h1>
+
+    <!-- Floating particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <!-- Main Container -->
+    <div class="container" id="mainContainer">
+
+        <!-- LEFT: Form Panels -->
+        <div class="forms-wrapper">
+
+            <!-- ====== LOGIN PANEL ====== -->
+            <div class="form-panel panel-login" id="loginPanel">
+                <div class="brand-row">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </div>
+                    <span class="brand-name">ECG Monitor</span>
+                </div>
+
+                <h1 class="form-title">Welcome Back</h1>
+                <p class="form-subtitle">Masuk ke portal monitoring EKG jarak jauh untuk tenaga medis profesional.</p>
+
+                {% if error %}
+                <div class="msg-error">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                {% if signup_success %}
+                <div class="msg-success">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                    {{ signup_success }}
+                </div>
+                {% endif %}
+
+                <!-- Google Sign-In -->
+                {% if google_client_id %}
+                <div class="google-btn-wrapper">
+                    <div id="g_id_onload"
+                         data-client_id="{{ google_client_id }}"
+                         data-context="signin"
+                         data-ux_mode="popup"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="filled_black"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-logo_alignment="left"
+                         style="width: 100%;">
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="divider">
+                    <span class="line"></span>
+                    <span class="text">atau Email Akademik</span>
+                    <span class="line"></span>
+                </div>
+
+                <form method="POST" action="/login" id="loginForm">
+                    <div class="field-group">
+                        <label class="field-label">Email / Username</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="username" placeholder="nama@email.ac.id atau nama@gmail.com" required autocomplete="username">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="password" id="loginPassword" placeholder="••••••••••" required autocomplete="current-password">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <button type="button" class="toggle-password" onclick="togglePw('loginPassword', this)" tabindex="-1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="remember-row">
+                        <input type="checkbox" id="remember">
+                        <label for="remember">Ingat sesi login</label>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Login Portal EKG
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                </form>
+
+                <div class="security-badge">
+                    <div class="badge-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="badge-text-top">Certification</div>
+                        <div class="badge-text-bottom">SSL/TLS Encrypted</div>
+                    </div>
+                </div>
+
+                <!-- Mobile-only toggle -->
+                <div class="mobile-toggle">
+                    Belum punya akun? <a onclick="switchToSignup()">Daftar Sekarang</a>
+                </div>
+            </div>
+
+            <!-- ====== SIGN-UP PANEL ====== -->
+            <div class="form-panel panel-signup" id="signupPanel">
+                <div class="brand-row">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </div>
+                    <span class="brand-name">ECG Monitor</span>
+                </div>
+
+                <h1 class="form-title">Buat Akun Baru</h1>
+                <p class="form-subtitle">Daftarkan diri Anda untuk mengakses sistem monitoring EKG.</p>
+
+                {% if signup_error %}
+                <div class="msg-error">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                    {{ signup_error }}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="/register" id="signupForm" onsubmit="return validateSignup()">
+                    <div class="field-group">
+                        <label class="field-label">Nama Lengkap</label>
+                        <div class="input-wrapper">
+                            <input type="text" name="full_name" placeholder="Dr. Nama Lengkap Anda" required autocomplete="name">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Email (@gmail.com atau .ac.id)</label>
+                        <div class="input-wrapper">
+                            <input type="email" name="email" id="signupEmail" placeholder="nama@gmail.com atau nama@univ.ac.id" required autocomplete="email">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" name="password" id="signupPassword" placeholder="Min. 8 karakter" required minlength="8" autocomplete="new-password">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <button type="button" class="toggle-password" onclick="togglePw('signupPassword', this)" tabindex="-1">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Role / Peran</label>
+                            <div class="input-wrapper">
+                                <select name="role" required>
+                                    <option value="" disabled selected>Pilih Peran</option>
+                                    <option value="pembuat_web">Pembuat Web</option>
+                                    <option value="tenaga_medis">Tenaga Medis</option>
+                                </select>
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Kode Akses</label>
+                            <div class="input-wrapper">
+                                <input type="text" name="access_code" id="accessCode" placeholder="Kode akses" required autocomplete="off">
+                                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Daftar Sekarang
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                    </button>
+                </form>
+
+                <div class="security-badge">
+                    <div class="badge-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <div>
+                        <div class="badge-text-top">Protected</div>
+                        <div class="badge-text-bottom">Kode Akses Diperlukan</div>
+                    </div>
+                </div>
+
+                <!-- Mobile-only toggle -->
+                <div class="mobile-toggle">
+                    Sudah punya akun? <a onclick="switchToLogin()">Masuk</a>
+                </div>
+            </div>
         </div>
-        <p class="login-subtitle">IoT Remote Monitoring — Sistem Simulasi</p>
 
-        <form method="POST" action="/login">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" placeholder="Masukkan username" required autofocus>
+        <!-- RIGHT: Overlay Sliding Panel -->
+        <div class="overlay-panel">
+            <div class="overlay-circles">
+                <div class="ov-circle c1"></div>
+                <div class="ov-circle c2"></div>
+                <div class="ov-circle c3"></div>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Masukkan password" required>
-            </div>
-            <button type="submit" class="btn-login">Masuk ke Dashboard</button>
-            {% if error %}
-            <p class="error-msg">{{ error }}</p>
-            {% endif %}
-        </form>
+            <div class="overlay-glow"></div>
+            <div class="overlay-glow top"></div>
 
-        <p class="disclaimer">
-            ⚠️ Sistem ini merupakan simulasi untuk keperluan penelitian dan bukan alat diagnosa medis resmi.
-        </p>
+            <!-- Content when showing LOGIN form (overlay says "Sign Up") -->
+            <div class="overlay-content ov-login">
+                <div class="overlay-icon-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                </div>
+                <div class="ecg-line">
+                    <svg viewBox="0 0 200 40">
+                        <path d="M0,20 L30,20 L40,20 L50,5 L55,35 L60,10 L65,25 L70,20 L100,20 L130,20 L140,20 L150,5 L155,35 L160,10 L165,25 L170,20 L200,20"/>
+                    </svg>
+                </div>
+                <h2 class="overlay-title">Belum Punya Akun?</h2>
+                <p class="overlay-desc">Daftarkan diri Anda untuk mengakses sistem monitoring EKG real-time dengan deteksi aritmia berbasis AI.</p>
+                <button class="btn-switch" onclick="switchToSignup()">Daftar Sekarang →</button>
+            </div>
+
+            <!-- Content when showing SIGN-UP form (overlay says "Login") -->
+            <div class="overlay-content ov-signup">
+                <div class="overlay-icon-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                </div>
+                <div class="ecg-line">
+                    <svg viewBox="0 0 200 40">
+                        <path d="M0,20 L30,20 L40,20 L50,5 L55,35 L60,10 L65,25 L70,20 L100,20 L130,20 L140,20 L150,5 L155,35 L160,10 L165,25 L170,20 L200,20"/>
+                    </svg>
+                </div>
+                <h2 class="overlay-title">Sudah Terdaftar?</h2>
+                <p class="overlay-desc">Masuk ke portal monitoring untuk memantau sinyal EKG pasien secara real-time dan menerima notifikasi darurat.</p>
+                <button class="btn-switch" onclick="switchToLogin()">Masuk ke Portal →</button>
+            </div>
+        </div>
     </div>
-</body>
 
+
+
+    <!-- ====== SCRIPTS ====== -->
+    <script>
+        // ===== Panel Switching =====
+        function switchToSignup() {
+            document.getElementById('mainContainer').classList.add('signup-mode');
+        }
+        function switchToLogin() {
+            document.getElementById('mainContainer').classList.remove('signup-mode');
+        }
+
+        // Auto-switch to signup mode if there's a signup_error
+        {% if signup_error %}
+        document.addEventListener('DOMContentLoaded', function() {
+            switchToSignup();
+        });
+        {% endif %}
+
+        // ===== Password Toggle =====
+        function togglePw(id, btn) {
+            const input = document.getElementById(id);
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            btn.innerHTML = isPassword
+                ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+                : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        }
+
+        // ===== Signup Validation =====
+        function validateSignup() {
+            const email = document.getElementById('signupEmail').value.trim();
+            const code = document.getElementById('accessCode').value.trim();
+
+            if (!email.endsWith('@gmail.com') && !email.includes('.ac.id')) {
+                showToast('Gunakan email @gmail.com atau domain akademik .ac.id!', 'error');
+                return false;
+            }
+            if (code !== 'MEDIS2026') {
+                showToast('Kode akses tidak valid. Hubungi admin untuk mendapatkan kode.', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        // ===== Toast Notification =====
+        function showToast(message, type) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.cssText = `
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                z-index: 99999;
+                padding: 14px 20px;
+                border-radius: 14px;
+                font-family: 'Inter', sans-serif;
+                font-size: 0.85rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: toastIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+                backdrop-filter: blur(20px);
+                max-width: 400px;
+                box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+            `;
+            if (type === 'error') {
+                toast.style.background = 'rgba(220,38,38,0.15)';
+                toast.style.color = '#fca5a5';
+                toast.style.border = '1px solid rgba(220,38,38,0.25)';
+            } else {
+                toast.style.background = 'rgba(16,185,129,0.15)';
+                toast.style.color = '#6ee7b7';
+                toast.style.border = '1px solid rgba(16,185,129,0.25)';
+            }
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Add animation keyframes if not already present
+            if (!document.getElementById('toastKeyframes')) {
+                const style = document.createElement('style');
+                style.id = 'toastKeyframes';
+                style.textContent = `
+                    @keyframes toastIn {
+                        from { opacity: 0; transform: translateX(40px) scale(0.9); }
+                        to { opacity: 1; transform: translateX(0) scale(1); }
+                    }
+                    @keyframes toastOut {
+                        from { opacity: 1; transform: translateX(0) scale(1); }
+                        to { opacity: 0; transform: translateX(40px) scale(0.9); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ===== Google Auth =====
+        function handleCredentialResponse(response) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/login';
+            const tokenField = document.createElement('input');
+            tokenField.type = 'hidden';
+            tokenField.name = 'google_jwt';
+            tokenField.value = response.credential;
+            form.appendChild(tokenField);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+
+
+        // ===== Floating Particles =====
+        (function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = ['rgba(37,99,235,0.3)', 'rgba(99,102,241,0.25)', 'rgba(14,165,233,0.2)', 'rgba(255,255,255,0.06)'];
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 4 + 1;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                container.appendChild(p);
+            }
+        })();
+
+
+    </script>
+</body>
 </html>

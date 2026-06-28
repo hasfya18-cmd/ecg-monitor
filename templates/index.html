@@ -1,413 +1,337 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ECG Remote Monitor — IoT</title>
-    <meta name="description"
-        content="Aplikasi monitoring EKG real-time dari IoT jarak jauh dengan klasifikasi CNN vs SVM">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>ECG Monitoring — Live Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💓</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/studio.css">
 </head>
-
 <body>
-    <!-- HEADER -->
-    <header class="app-header">
-        <div class="header-left">
-            <div class="logo-pulse"></div>
-            <h1>ECG <span class="accent">Monitor</span></h1>
-            <span class="subtitle">IoT Long-Range Remote Monitoring</span>
+<!-- Top Alert Toast -->
+<div class="tg-toast" id="topAlertToast" style="border: 1px solid #dc2626;">
+    <div class="tg-toast-icon" style="background: #dc2626;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+    <div class="tg-toast-body">
+        <div class="tg-toast-header"><span class="tg-toast-label" style="color: #f87171;">Peringatan Deteksi Aritmia</span><span class="tg-toast-time" id="topAlertTime">JUST NOW</span></div>
+        <p class="tg-toast-msg" id="topAlertMsg" style="margin-top: 4px; font-weight: 500; font-size: 0.75rem; line-height: 1.4;">...</p>
+    </div>
+</div>
+
+<div class="app-shell">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-brand">
+            <div class="sb-brand-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <span class="sb-brand-text">ECG MONITORING</span>
         </div>
-        <div class="header-right">
-            <div class="connection-status" id="connectionStatus">
-                <span class="status-dot"></span>
-                <span class="status-text">Connecting...</span>
+        <nav class="sb-nav">
+            <button class="sb-nav-item active" id="nav-home" onclick="switchTab('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>System Status</span></button>
+            <button class="sb-nav-item" id="nav-patients" onclick="switchTab('patients')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Patient Directory</span></button>
+            <button class="sb-nav-item" id="nav-dashboard" onclick="switchTab('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Live Monitor</span></button>
+            <button class="sb-nav-item" id="nav-analytics" onclick="switchTab('analytics')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Algoritma</span></button>
+            <button class="sb-nav-item" id="nav-settings" onclick="switchTab('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
+        </nav>
+        <div class="sb-profile">
+            <div class="sb-avatar">
+                {% if session.get('user_name') %}
+                    {{ session.get('user_name')[:2].upper() }}
+                {% else %}
+                    DR
+                {% endif %}
             </div>
-            <button class="btn-stream" id="btnAlarm" onclick="toggleAlarm()">
-                <span class="btn-icon">🔊</span>
-                <span class="btn-label">Sound: ON</span>
-            </button>
-            <button class="btn-stream" id="btnStream" onclick="toggleStream()">
-                <span class="btn-icon">⏸</span>
-                <span class="btn-label">Pause</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <main class="dashboard">
-        <!-- ROW 1: ECG Waveform (full width) -->
-        <section class="card card-ecg">
-            <div class="card-header">
-                <h2>📡 Sinyal EKG Real-Time</h2>
-                <div class="ecg-meta">
-                    <span class="meta-tag" id="metaModel">Model: CNN</span>
-                    <span class="meta-tag" id="metaSNR">SNR: 30 dB</span>
-                    <span class="meta-tag" id="metaBeat">Beat: 0</span>
-                    <span class="meta-tag meta-tag-time" id="metaInferenceTime">⏱ Inferensi: -- ms</span>
-                </div>
-            </div>
-            <div class="canvas-wrapper">
-                <canvas id="ecgCanvas"></canvas>
-                <div class="ecg-alert-overlay" id="ecgAlertOverlay" style="display: none;">
-                    <span class="ecg-alert-icon">⚠️</span>
-                    <span class="ecg-alert-text">ARITMIA TERDETEKSI</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROW 2: Status Cards -->
-        <div class="status-row">
-            <!-- Heart Rate -->
-            <div class="card card-metric card-hr">
-                <div class="metric-icon pulse-anim">💓</div>
-                <div class="metric-value" id="heartRate">--</div>
-                <div class="metric-unit">BPM</div>
-                <div class="metric-label">Heart Rate</div>
-            </div>
-
-            <!-- Classification Status -->
-            <div class="card card-metric card-status" id="classCard">
-                <div class="metric-icon">🔍</div>
-                <div class="metric-value status-label" id="classLabel">Menunggu...</div>
-                <div class="metric-confidence" id="classConfidence">Confidence: --%</div>
-                <div class="metric-label" id="classModel">Model: CNN</div>
-            </div>
-
-            <!-- Stats -->
-            <div class="card card-metric card-stats">
-                <div class="metric-icon">📊</div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-value" id="statTotal">0</span>
-                        <span class="stat-label">Total Beat</span>
-                    </div>
-                    <div class="stat-item stat-normal">
-                        <span class="stat-value" id="statNormal">0</span>
-                        <span class="stat-label">Normal</span>
-                    </div>
-                    <div class="stat-item stat-abnormal">
-                        <span class="stat-value" id="statAbnormal">0</span>
-                        <span class="stat-label">Abnormal</span>
-                    </div>
-                    <div class="stat-item stat-loss">
-                        <span class="stat-value" id="statLoss">0</span>
-                        <span class="stat-label">Packet Lost</span>
-                    </div>
-                </div>
+            <div class="sb-profile-info">
+                <p class="sb-name">{{ session.get('user_name', 'Dr. Operator') }}</p>
+                <p class="sb-role">{{ session.get('user_role', 'Kardiologi') }} • Online</p>
             </div>
         </div>
+        <button class="sb-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </aside>
 
-        <!-- ROW 2.5: CNN vs SVM Side-by-Side Comparison (Per-Beat) -->
-        <section class="card card-comparison" id="comparisonPanel">
-            <div class="card-header">
-                <h2>🔬 Perbandingan Per-Beat: CNN vs SVM</h2>
-                <span class="meta-tag meta-tag-live" id="compBeatNum">Beat: --</span>
+    <!-- MAIN -->
+    <main class="main-area">
+        <!-- TOPBAR -->
+        <header class="topbar">
+            <div></div>
+            <div class="topbar-actions">
+                <div class="alarm-badge" id="btnAlarm" onclick="toggleAlarm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg><span>Pulse Alarm Active</span></div>
+                <button class="topbar-btn" onclick="toggleStream()" id="btnStream" title="Pause/Resume"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
             </div>
-            <div class="comparison-body">
-                <!-- CNN Column -->
-                <div class="comp-column comp-cnn">
-                    <div class="comp-model-header">
-                        <span class="comp-model-icon">🧠</span>
-                        <span class="comp-model-name">CNN</span>
-                        <span class="comp-model-type">Deep Learning</span>
+        </header>
+
+        <div class="content-scroll">
+            <!-- TAB: HOME / SYSTEM STATUS -->
+            <section class="tab-panel active" id="tab-home">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">System Standby</h1>
                     </div>
-                    <div class="comp-prediction" id="compCnnPred">
-                        <span class="comp-pred-label">Menunggu...</span>
+                </div>
+                <div style="height: 400px; background: #fff; border: 1px solid var(--border-dark); border-radius: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: var(--shadow-sm);">
+                    <svg viewBox="0 0 1000 200" style="width: 100%; height: 60%; stroke: rgba(37,99,235,0.2); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 40px;">
+                        <polyline points="0,100 150,100 170,70 190,140 210,100 450,100 470,70 490,140 510,100 750,100 770,70 790,140 810,100 1000,100" />
+                    </svg>
+                    <svg viewBox="0 0 1000 200" style="position: absolute; top: 10%; width: 100%; height: 60%; stroke: var(--blue); stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round;">
+                        <polyline points="0,100 150,100 170,70 190,140 210,100 450,100 470,70 490,140 510,100 750,100 770,70 790,140 810,100 1000,100" style="stroke-dasharray: 2000; stroke-dashoffset: 2000; animation: dash 3s linear infinite;" />
+                    </svg>
+                    <style>
+                        @keyframes dash {
+                            0% { stroke-dashoffset: 2000; }
+                            100% { stroke-dashoffset: 0; }
+                        }
+                    </style>
+                    <div style="position: absolute; bottom: 40px; text-align: center;">
+                        <h2 style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-bottom: 8px;">ECG MONITORING SYSTEM</h2>
+                        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 24px;">Please select a patient from the directory to view detailed biometrics and tools.</p>
+                        <button class="btn-primary-lg" style="margin: 0 auto;" onclick="switchTab('patients')">Open Patient Directory</button>
                     </div>
-                    <div class="comp-metric">
-                        <span class="comp-metric-label">Confidence</span>
-                        <div class="comp-bar-wrapper">
-                            <div class="comp-bar comp-bar-cnn" id="compCnnBar" style="width: 0%"></div>
-                        </div>
-                        <span class="comp-metric-value" id="compCnnConf">--%</span>
+                </div>
+            </section>
+
+            <!-- TAB: DASHBOARD (Per-Patient Monitoring) -->
+            <section class="tab-panel" id="tab-dashboard">
+                <div class="page-header">
+                    <div>
+                        <div class="page-tags"><span class="tag-blue">ECG CORE V4.0</span><span class="tag-muted">• Real-time Signal Processor</span></div>
+                        <h1 class="page-title">Patient Vitals</h1>
+                        <p class="page-sub">Monitoring <strong id="currentPatientName">--</strong> • <span id="currentPatientMeta">Loading...</span></p>
                     </div>
-                    <div class="comp-metric">
-                        <span class="comp-metric-label">Waktu Inferensi</span>
-                        <span class="comp-metric-value comp-time" id="compCnnTime">-- ms</span>
+                    <div class="page-actions">
+                        <button class="btn-outline" onclick="switchTab('patients')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg> Back to Directory</button>
                     </div>
                 </div>
 
-                <!-- VS Divider -->
-                <div class="comp-vs">
-                    <span class="comp-vs-text">VS</span>
-                    <div class="comp-winner" id="compWinner">--</div>
+                <!-- STATUS CARDS -->
+                <div class="cards-grid">
+                    <div class="status-card" id="hrCard"><div class="sc-icon bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="sc-body"><h4>Heart Rate</h4><div class="sc-val"><span id="heartRate">--</span><small>BPM</small></div></div></div>
+                    <div class="status-card"><div class="sc-icon bg-emerald"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.7 7.7a7.5 7.5 0 1 0 0 8.6"/><path d="M21 12H9"/></svg></div><div class="sc-body"><h4>Oxygen Level</h4><div class="sc-val"><span id="spo2Value">98</span><small>%</small></div></div></div>
+                    <div class="status-card"><div class="sc-icon bg-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-body"><h4>Blood Pressure</h4><div class="sc-val"><span id="bpValue">120/80</span><small>mmHg</small></div></div></div>
+                    <div class="status-card" id="aiCardCNN"><div class="sc-icon bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0-.34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg></div><div class="sc-body"><h4>Model: CNN</h4><div class="sc-val"><span id="aiStatusCNN" class="ai-status">Ready</span><small id="aiConfidenceCNN">Confidence: --%</small></div></div></div>
+                    <div class="status-card" id="aiCardSVM"><div class="sc-icon bg-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></div><div class="sc-body"><h4>Model: SVM</h4><div class="sc-val"><span id="aiStatusSVM" class="ai-status">Ready</span><small id="aiConfidenceSVM">Confidence: --%</small></div></div></div>
                 </div>
 
-                <!-- SVM Column -->
-                <div class="comp-column comp-svm">
-                    <div class="comp-model-header">
-                        <span class="comp-model-icon">📐</span>
-                        <span class="comp-model-name">SVM</span>
-                        <span class="comp-model-type">Machine Learning</span>
-                    </div>
-                    <div class="comp-prediction" id="compSvmPred">
-                        <span class="comp-pred-label">Menunggu...</span>
-                    </div>
-                    <div class="comp-metric">
-                        <span class="comp-metric-label">Confidence</span>
-                        <div class="comp-bar-wrapper">
-                            <div class="comp-bar comp-bar-svm" id="compSvmBar" style="width: 0%"></div>
-                        </div>
-                        <span class="comp-metric-value" id="compSvmConf">--%</span>
-                    </div>
-                    <div class="comp-metric">
-                        <span class="comp-metric-label">Waktu Inferensi</span>
-                        <span class="comp-metric-value comp-time" id="compSvmTime">-- ms</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROW 3: Controls + Alert History -->
-        <div class="bottom-row">
-            <!-- Controls Panel -->
-            <section class="card card-controls">
-                <div class="card-header">
-                    <h2>⚙️ Kontrol Simulasi</h2>
-                </div>
-                <div class="controls-body">
-                    <!-- Data Source Selection -->
-                    <div class="control-group">
-                        <label class="control-label">Sumber Data</label>
-                        <div class="toggle-group">
-                            <button class="toggle-btn active" id="btnSourceDemo"
-                                onclick="setSource('demo')">Simulasi</button>
-                            <button class="toggle-btn" id="btnSourceLive" onclick="setSource('live')">Smartwatch
-                                (Live)</button>
-                        </div>
-                    </div>
-
-                    <!-- Model Selection -->
-                    <div class="control-group">
-                        <label class="control-label">Model Klasifikasi</label>
-                        <div class="toggle-group">
-                            <button class="toggle-btn active" id="btnCNN" onclick="setModel('CNN')">CNN</button>
-                            <button class="toggle-btn" id="btnSVM" onclick="setModel('SVM')">SVM</button>
-                        </div>
-                    </div>
-
-                    <!-- SNR Slider -->
-                    <div class="control-group">
-                        <label class="control-label">
-                            SNR Level (Noise)
-                            <span class="control-value" id="snrValue">30 dB</span>
-                        </label>
-                        <input type="range" class="slider" id="sliderSNR" min="5" max="40" value="30" step="1"
-                            oninput="updateSNR(this.value)">
-                        <div class="slider-labels">
-                            <span>Noisy (5dB)</span>
-                            <span>Clean (40dB)</span>
-                        </div>
-                        <div class="snr-quality" id="snrQuality">
-                            <div class="snr-quality-bar">
-                                <div class="snr-quality-fill" id="snrQualityFill" style="width: 75%"></div>
+                <!-- ECG MONITOR + METRICS -->
+                <div class="ecg-row" style="display: block;">
+                    <div class="ecg-monitor-card" style="width: 100%;">
+                        <div class="ecg-header">
+                            <div><h3 class="ecg-subtitle">Cardiac Biometric Stream</h3><p class="ecg-title" id="ecgDisplayTitle">LIVE ECG MONITORING</p></div>
+                            <div class="ecg-controls" style="display: flex; gap: 12px; align-items: center;">
+                                <div class="header-alert-badge" id="headerAlertBadge" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #dc2626; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; animation: flashRed 1s infinite; letter-spacing: 0.05em;">⚠️ ARITMIA TERDETEKSI</div>
+                                <div class="live-badge"><div class="live-dot"></div><span>Live Stream</span></div>
                             </div>
-                            <span class="snr-quality-desc" id="snrQualityDesc">📶 Koneksi Wi-Fi Indoor — Sinyal Baik</span>
                         </div>
+                        <div id="viewSingle" class="ecg-canvas-wrap" style="position: relative;"><canvas id="ecgCanvas"></canvas><div class="ecg-alert-flash" id="ecgAlertOverlay" style="pointer-events: none;"></div></div>
+                        <div class="ecg-footer"><div><span>Grid: 25mm/s</span><span>Gain: 10mm/mV</span></div><div><span>Filter: 0.05-150Hz</span><span>Sampling: 500Hz</span></div></div>
+                    </div>
+                </div>
+
+                <!-- CARDIAC METRICS (CNN vs SVM) -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+                    <div class="metrics-panel" style="width: 100%; border-top: 4px solid var(--blue);">
+                        <div class="mp-header"><h3 style="color: var(--blue);">Prediksi Morphologi (CNN)</h3></div>
+                        <div class="mp-rows">
+                            <div class="mp-row"><div><p class="mp-label">PR Interval</p><p class="mp-target">Target: 120-200ms</p></div><div class="mp-val-wrap"><p class="mp-val">162 ms</p><p class="mp-status">Optimal</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">QRS Duration</p><p class="mp-target">Target: &lt; 120ms</p></div><div class="mp-val-wrap"><p class="mp-val">98 ms</p><p class="mp-status">Optimal</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">QT/QTc</p><p class="mp-target">Target: &lt; 440ms</p></div><div class="mp-val-wrap"><p class="mp-val">384/402 ms</p><p class="mp-status">Optimal</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">P-Wave Axis</p><p class="mp-target">Target: 0-75°</p></div><div class="mp-val-wrap"><p class="mp-val">54°</p><p class="mp-status">Optimal</p></div></div>
+                        </div>
+                        <div class="mp-inference"><span id="metaInferenceTime">⏱ -- ms</span></div>
                     </div>
 
-                    <!-- Packet Loss Slider -->
-                    <div class="control-group">
-                        <label class="control-label">
-                            Network Packet Loss (IoT)
-                            <span class="control-value" id="lossValue">5%</span>
-                        </label>
-                        <input type="range" class="slider" id="sliderLoss" min="0" max="30" value="5" step="1"
-                            oninput="updatePacketLoss(this.value)">
-                        <div class="slider-labels">
-                            <span>Bagus (0%)</span>
-                            <span>Buruk (30%)</span>
+                    <div class="metrics-panel" style="width: 100%; border-top: 4px solid var(--orange);">
+                        <div class="mp-header"><h3 style="color: var(--orange);">Ekstraksi Fitur (SVM)</h3></div>
+                        <div class="mp-rows">
+                            <div class="mp-row"><div><p class="mp-label">PR Interval</p><p class="mp-target">Feature Value</p></div><div class="mp-val-wrap"><p class="mp-val">160 ms</p><p class="mp-status" style="color:var(--text-muted);background:transparent;border:1px solid var(--border);">Extracted</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">QRS Duration</p><p class="mp-target">Feature Value</p></div><div class="mp-val-wrap"><p class="mp-val">102 ms</p><p class="mp-status" style="color:var(--text-muted);background:transparent;border:1px solid var(--border);">Extracted</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">QT Interval</p><p class="mp-target">Feature Value</p></div><div class="mp-val-wrap"><p class="mp-val">390 ms</p><p class="mp-status" style="color:var(--text-muted);background:transparent;border:1px solid var(--border);">Extracted</p></div></div>
+                            <div class="mp-row"><div><p class="mp-label">RR Interval</p><p class="mp-target">Feature Value</p></div><div class="mp-val-wrap"><p class="mp-val">820 ms</p><p class="mp-status" style="color:var(--text-muted);background:transparent;border:1px solid var(--border);">Extracted</p></div></div>
+                        </div>
+                        <div class="mp-inference"><span id="svmInferenceTime">⏱ -- ms</span></div>
+                    </div>
+                </div>
+
+                <!-- CONTROLS + ALERTS ROW -->
+                <div class="bottom-row">
+                    <div class="ctrl-card"><h3>⚙️ Konfigurasi Parameter Simulasi</h3>
+                        <div class="ctrl-grid">
+                            <div class="ctrl-item"><label>SNR Level <span id="snrValue">30 dB</span></label><input type="range" min="5" max="40" value="30" oninput="updateSNR(this.value)"></div>
+                            <div class="ctrl-item"><label>Packet Loss <span id="lossValue">5%</span></label><input type="range" min="0" max="50" value="5" oninput="updatePacketLoss(this.value)"></div>
+                            <div class="ctrl-item"><label>Speed <span id="speedValue">Normal</span></label><input type="range" min="3" max="15" value="8" oninput="updateSpeed(this.value)"></div>
+                            <div class="ctrl-item"><label>Model</label><div class="model-toggle"><button class="mt-btn active" id="btnCNN" onclick="setModel('CNN')">CNN</button><button class="mt-btn" id="btnSVM" onclick="setModel('SVM')">SVM</button></div></div>
                         </div>
                     </div>
-
-                    <!-- Speed Slider -->
-                    <div class="control-group">
-                        <label class="control-label">
-                            Kecepatan Streaming
-                            <span class="control-value" id="speedValue">Normal</span>
-                        </label>
-                        <input type="range" class="slider" id="sliderSpeed" min="3" max="15" value="8" step="1"
-                            oninput="updateSpeed(this.value)">
-                        <div class="slider-labels">
-                            <span>Cepat</span>
-                            <span>Lambat</span>
-                        </div>
-                    </div>
-
-                        <!-- Manual Warning -->
-                    <div class="control-group" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <label class="control-label" style="color:#fecdd3;">Kirim Intervensi Medis</label>
-                        <select id="warningType" class="control-select">
-                            <option value="Tarik Napas & Istirahat">Tarik Napas & Istirahat</option>
-                            <option value="Segera Minum Obat Jantung">Segera Minum Obat Jantung</option>
-                            <option value="Hubungi Rumah Sakit / UGD">Hubungi Rumah Sakit / UGD</option>
-                        </select>
-                        <div id="warningIndicator" style="margin-top: 10px; font-size: 0.8rem; color: #a5b4fc; background: rgba(79, 70, 229, 0.1); padding: 8px; border-radius: 6px; border: 1px dashed rgba(79, 70, 229, 0.3); line-height: 1.4;">
-                            💡 <b>Status:</b> Menunggu data HR...
-                        </div>
-                        <button class="btn-primary" onclick="triggerManualWarning()" style="margin-top: 10px; width: 100%;">Kirim ke Smartwatch</button>
-                    </div>
-
-                    <!-- Export CSV -->
-                    <div class="control-group" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <button class="btn-export" onclick="exportCSV()">📥 Export Data ke CSV</button>
-                    </div>
+                    <div class="alert-card"><div class="alert-card-header"><h3>🚨 Alert History</h3><span class="alert-count" id="alertCount">0</span></div><div class="alerts-list" id="alertsBody"><div class="alert-empty">Sistem memantau... Belum ada alert.</div></div></div>
                 </div>
             </section>
 
-            <!-- Alert History -->
-            <section class="card card-alerts">
-                <div class="card-header">
-                    <h2>🚨 Riwayat Alert</h2>
-                    <span class="alert-count" id="alertCount">0</span>
+            <!-- TAB: PATIENTS -->
+            <section class="tab-panel" id="tab-patients">
+                <div class="page-header"><div><h1 class="page-title">Patient Directory</h1><p class="page-sub">Select patient to start monitoring</p></div><div class="page-actions"><span class="tag-blue" id="patientTotal">Total: --</span></div></div>
+                <div style="margin-bottom:20px;position:relative;">
+                    <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="patientSearch" placeholder="Cari pasien (contoh: JS11534)" style="width:100%;padding:12px 16px 12px 42px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;box-sizing:border-box;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'">
                 </div>
-                <div class="alerts-body" id="alertsBody">
-                    <div class="alert-empty">
-                        Belum ada alert. Sistem sedang memantau...
+                <div class="patients-grid" id="patientsGrid"><div class="alert-empty">Memuat data pasien...</div></div>
+            </section>
+
+            <!-- TAB: ANALYTICS -->
+            <section class="tab-panel" id="tab-analytics">
+                <div class="page-header"><div><h1 class="page-title">Validasi Performa Algoritma</h1><p class="page-sub">Membandingkan CNN (Deep Learning) vs SVM (Machine Learning)</p></div></div>
+                
+                <div class="alg-grid-top" style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="an-chart-card"><h4>Radar Perbandingan</h4><div class="an-chart-wrap"><canvas id="radarChart"></canvas></div></div>
+                    <div class="an-chart-card"><h4>Stabilitas Degradasi SNR</h4><div class="an-chart-wrap"><canvas id="snrChart"></canvas></div></div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="an-chart-card wide"><h4>📈 Real-Time Accuracy Trend — CNN vs SVM</h4><div class="an-chart-wrap"><canvas id="comparisonChart"></canvas></div></div>
+                </div>
+
+                <!-- CNN vs SVM Score Cards -->
+                <div class="model-cards-row">
+                    <div class="model-card dark"><div class="mc-header"><div class="mc-icon bg-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg></div><div><h3>CNN (Deep Learning)</h3><p>Primary Detection Model</p></div></div>
+                        <div class="mc-metrics"><div class="mc-m"><p class="mc-label">ACCURACY</p><p class="mc-val" id="bm-cnn-acc">--</p></div><div class="mc-m"><p class="mc-label">F1 SCORE</p><p class="mc-val" id="bm-cnn-f1">--</p></div><div class="mc-m"><p class="mc-label">PRECISION</p><p class="mc-val" id="bm-cnn-prec">--</p></div><div class="mc-m"><p class="mc-label">RECALL</p><p class="mc-val" id="bm-cnn-rec">--</p></div><div class="mc-m"><p class="mc-label">LATENCY</p><p class="mc-val" id="bm-cnn-ms">--</p></div><div class="mc-m"><p class="mc-label">TOTAL BEATS</p><p class="mc-val" id="bm-cnn-count">0</p></div></div></div>
+                    <div class="model-card light"><div class="mc-header"><div class="mc-icon bg-slate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg></div><div><h3>SVM (Machine Learning)</h3><p>Legacy Baseline Model</p></div></div>
+                        <div class="mc-metrics"><div class="mc-m"><p class="mc-label">ACCURACY</p><p class="mc-val" id="bm-svm-acc">--</p></div><div class="mc-m"><p class="mc-label">F1 SCORE</p><p class="mc-val" id="bm-svm-f1">--</p></div><div class="mc-m"><p class="mc-label">PRECISION</p><p class="mc-val" id="bm-svm-prec">--</p></div><div class="mc-m"><p class="mc-label">RECALL</p><p class="mc-val" id="bm-svm-rec">--</p></div><div class="mc-m"><p class="mc-label">LATENCY</p><p class="mc-val" id="bm-svm-ms">--</p></div><div class="mc-m"><p class="mc-label">TOTAL BEATS</p><p class="mc-val" id="bm-svm-count">0</p></div></div></div>
+                </div>
+
+                <!-- Confusion Matrix -->
+                <div class="an-chart-card cm-card" style="margin-top: 24px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 24px;">
+                        <div>
+                            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Analisis Confusion Matrix</h3>
+                            <p style="font-size: 0.875rem; color: var(--text-sub);">Berdasarkan data streaming real-time</p>
+                        </div>
+                        <div style="display: flex; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:12px;height:12px;background:var(--blue);border-radius:2px;"></div><span style="font-size:0.75rem;font-weight:700;">CNN</span></div>
+                            <div style="display: flex; align-items: center; gap: 8px;"><div style="width:12px;height:12px;background:var(--orange);border-radius:2px;"></div><span style="font-size:0.75rem;font-weight:700;">SVM</span></div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                        <div>
+                            <h4 style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; text-align: center;">CNN (Deep Learning)</h4>
+                            <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px;">
+                                <div></div>
+                                <div style="text-align:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);">NORMAL (Pred)</div>
+                                <div style="text-align:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);">TIDAK TERATUR (Pred)</div>
+                                <div style="display:flex;align-items:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);">NORMAL</div>
+                                <div style="background:var(--blue);color:#fff;border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;" id="cnn-tn">0</div><div style="font-size:0.65rem;opacity:0.8;">True Negative</div></div>
+                                <div style="background:var(--bg-main);border:1px dashed var(--border-dark);border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;color:var(--text-sub);" id="cnn-fp">0</div><div style="font-size:0.65rem;color:var(--text-muted);">False Positive</div></div>
+                                <div style="display:flex;align-items:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);">TIDAK TERATUR</div>
+                                <div style="background:var(--bg-main);border:1px dashed var(--border-dark);border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;color:var(--text-sub);" id="cnn-fn">0</div><div style="font-size:0.65rem;color:var(--text-muted);">False Negative</div></div>
+                                <div style="background:var(--blue);color:#fff;border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;" id="cnn-tp">0</div><div style="font-size:0.65rem;opacity:0.8;">True Positive</div></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; text-align: center;">SVM (Machine Learning)</h4>
+                            <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px;">
+                                <div></div>
+                                <div style="text-align:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);">NORMAL (Pred)</div>
+                                <div style="text-align:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);">TIDAK TERATUR (Pred)</div>
+                                <div style="display:flex;align-items:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);">NORMAL</div>
+                                <div style="background:var(--orange);color:#fff;border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;" id="svm-tn">0</div><div style="font-size:0.65rem;opacity:0.8;">True Negative</div></div>
+                                <div style="background:var(--bg-main);border:1px dashed var(--border-dark);border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;color:var(--text-sub);" id="svm-fp">0</div><div style="font-size:0.65rem;color:var(--text-muted);">False Positive</div></div>
+                                <div style="display:flex;align-items:center;font-size:0.65rem;font-weight:800;color:var(--text-muted);writing-mode:vertical-rl;transform:rotate(180deg);">TIDAK TERATUR</div>
+                                <div style="background:var(--bg-main);border:1px dashed var(--border-dark);border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;color:var(--text-sub);" id="svm-fn">0</div><div style="font-size:0.65rem;color:var(--text-muted);">False Negative</div></div>
+                                <div style="background:var(--orange);color:#fff;border-radius:16px;padding:24px;text-align:center;"><div style="font-size:2rem;font-weight:900;" id="svm-tp">0</div><div style="font-size:0.65rem;opacity:0.8;">True Positive</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="switchTab('patients')" style="margin-top:32px;width:100%;padding:16px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">← Kembali ke Patient Directory</button>
+            </section>
+
+            <!-- TAB: SETTINGS -->
+            <section class="tab-panel" id="tab-settings">
+                <div class="page-header"><div><h1 class="page-title">Telegram Notification</h1><p class="page-sub">Kelola notifikasi aritmia per-pasien via Telegram</p></div><div class="page-actions"><span class="tag-blue" id="tgRegCountBadge">0 Terdaftar</span></div></div>
+                
+                <!-- Registration Form -->
+                <div class="settings-card" style="border-top: 4px solid #0ea5e9;">
+                    <h3>📲 Registrasi Notifikasi Pasien</h3>
+                    <p class="settings-desc">Daftarkan pasien untuk menerima peringatan aritmia otomatis melalui Telegram.<br>Pastikan pasien sudah mengirim <code>/start</code> ke bot <strong>@LOVECG_Bot</strong> terlebih dahulu.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div class="settings-field"><label>Record ID Pasien</label><input type="text" id="tgRegRecordId" placeholder="Contoh: JS11550"></div>
+                        <div class="settings-field"><label>Telegram Chat ID Pasien</label><input type="text" id="tgRegChatId" placeholder="Contoh: 5485129793"></div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <button class="btn-primary-lg" id="tgRegBtn" onclick="registerTelegram()">Daftarkan Pasien</button>
+                        <span id="tgRegStatus" style="display: none; font-size: 0.8rem; font-weight: 600;"></span>
+                    </div>
+                </div>
+
+                <!-- How to get Chat ID -->
+                <div class="settings-card" style="border-top: 4px solid #f59e0b; margin-top: 20px;">
+                    <h3>❓ Cara Mendapatkan Chat ID Pasien</h3>
+                    <p class="settings-desc" style="line-height: 2;">
+                        <strong>1.</strong> Minta pasien buka Telegram, cari bot <strong>@LOVECG_Bot</strong><br>
+                        <strong>2.</strong> Klik <strong>Start</strong> atau kirim pesan <code>/start</code><br>
+                        <strong>3.</strong> Kirim pesan apa saja ke bot (misal: "halo")<br>
+                        <strong>4.</strong> Buka link ini di browser:<br>
+                        <code style="font-size: 0.7rem; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; display: inline-block; margin: 4px 0 4px 20px;">https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code><br>
+                        <strong>5.</strong> Cari angka di <code>"chat":{"id": <strong>XXXXXXX</strong>}</code> — itu Chat ID-nya
+                    </p>
+                </div>
+
+                <!-- Registered Patients List -->
+                <div class="settings-card" style="border-top: 4px solid #22c55e; margin-top: 20px;">
+                    <h3>✅ Pasien Terdaftar Notifikasi Telegram</h3>
+                    <p class="settings-desc">Pasien berikut akan menerima peringatan otomatis saat sistem mendeteksi aritmia pada rekaman EKG mereka.</p>
+                    <div id="tgRegList" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
+                        <div class="tg-reg-empty" style="text-align: center; padding: 32px; color: var(--text-muted); font-size: 0.875rem; background: var(--bg-main); border-radius: 16px; border: 1px dashed var(--border);">Belum ada pasien terdaftar. Gunakan form di atas untuk mendaftarkan.</div>
+                    </div>
+                </div>
+
+                <!-- Admin Bot Config -->
+                <div class="settings-card" style="border-top: 4px solid #6366f1; margin-top: 20px;">
+                    <h3>🤖 Konfigurasi Bot Admin</h3>
+                    <p class="settings-desc">Token bot Telegram dan Chat ID admin. Admin akan menerima <strong>semua</strong> notifikasi aritmia dari seluruh pasien.</p>
+                    <div class="settings-field"><label>Bot Token</label><input type="text" id="tgToken" placeholder="123456:ABC-DEF..."></div>
+                    <div class="settings-field"><label>Admin Chat ID</label><input type="text" id="tgChatId" placeholder="876543210"></div>
+                    <div class="settings-field"><label>Telegram API URL (Opsional)</label><input type="text" id="tgApiUrl" placeholder="https://api.telegram.org (Default)"></div>
+                    <button class="btn-primary-lg" onclick="saveTelegramConfig()">Simpan Konfigurasi Admin</button>
+                    <span class="save-status" id="tgSaveStatus">Tersimpan!</span>
+                    
+                    <!-- Webhook setup for bypassing HF Space outbound blocks -->
+                    <div style="margin-top: 16px; padding: 14px; background: #e0e7ff; border-radius: 12px; font-size: 0.825rem; border: 1px solid #c7d2fe; color: #3730a3;">
+                        <strong style="color: #4338ca; display: block; margin-bottom: 4px;">🌐 Webhook Integration (Bypass Blokir Hugging Face)</strong>
+                        <p style="margin: 0 0 10px 0; color: #4338ca; font-size: 0.775rem; line-height: 1.4;">
+                            Hugging Face Spaces memblokir koneksi keluar. Untuk mengaktifkan bot EKG, aktifkan mode Webhook di bawah ini setelah menyimpan token:
+                        </p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                            <button onclick="openTelegramWebhookLink('set')" style="padding: 6px 12px; font-size: 0.75rem; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Hubungkan Webhook (Tab Baru)</button>
+                            <button onclick="openTelegramWebhookLink('delete')" style="padding: 6px 12px; font-size: 0.75rem; background: #9ca3af; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Hapus Webhook</button>
+                        </div>
+                        <div id="tgWebhookUrlPreview" style="font-size: 0.7rem; color: #6366f1; word-break: break-all; font-family: monospace; padding: 4px; background: rgba(255,255,255,0.6); border-radius: 4px;">Webhook URL: --</div>
                     </div>
                 </div>
             </section>
         </div>
-
-        <!-- ROW 4: Benchmark Table -->
-        <section class="card card-benchmark">
-            <div class="card-header">
-                <h2>📊 Perbandingan Real-Time: CNN vs SVM</h2>
-            </div>
-            <div class="benchmark-body">
-                <table class="benchmark-table">
-                    <thead>
-                        <tr>
-                            <th>Metrik</th>
-                            <th style="color:#60a5fa;">🧠 CNN</th>
-                            <th style="color:#a78bfa;">📐 SVM</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Akurasi</td>
-                            <td id="bm-cnn-acc">--</td>
-                            <td id="bm-svm-acc">--</td>
-                        </tr>
-                        <tr>
-                            <td>F1-Score</td>
-                            <td id="bm-cnn-f1">--</td>
-                            <td id="bm-svm-f1">--</td>
-                        </tr>
-                        <tr>
-                            <td>Waktu Eksekusi (avg)</td>
-                            <td id="bm-cnn-ms">--</td>
-                            <td id="bm-svm-ms">--</td>
-                        </tr>
-                        <tr>
-                            <td>Total Beat Diklasifikasi</td>
-                            <td id="bm-cnn-count">0</td>
-                            <td id="bm-svm-count">0</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- ROW 5: Simulated Patient Device -->
-        <section class="card card-device" id="patientDevice">
-            <div class="card-header">
-                <h2>⌚ Status Tautan Smartwatch (IoT)</h2>
-            </div>
-            <div class="device-body">
-                <div class="device-screen" id="deviceScreen">
-                    <div class="device-time" id="deviceTime">--:--</div>
-                    <div class="device-status">Memantau...</div>
-                    <div class="device-hr"><span class="pulse-anim">💚</span> <span id="deviceHrValue">--</span> bpm
-                    </div>
-                    <div class="device-action" id="deviceAction" style="display: none; margin-top: 15px;">
-                        <p id="deviceActionText" style="font-size: 0.85rem; margin-bottom: 10px; color: #fecdd3; font-weight: bold;"></p>
-                        <button class="btn-acknowledge" onclick="acknowledgeWarning()">SAYA MENGERTI</button>
-                    </div>
-                </div>
-                <div class="device-feedback">
-                    <p>Status Komunikasi 2 Arah:</p>
-                    <span class="badge-status badge-connected" id="feedbackStatus">Menunggu Alert...</span>
-
-                    <div class="live-instructions" id="liveInstructions"
-                        style="display: none; margin-top: 20px; text-align: left; padding: 15px; background: rgba(34, 211, 238, 0.05); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 8px;">
-                        <h4 style="margin: 0 0 10px 0; color: #22d3ee; font-size: 0.9rem;">Integrasi Live (Ngrok)</h4>
-                        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 8px 0;">Untuk menghubungkan smartwatch
-                            sungguhan ke web app ini:</p>
-                        <ol style="font-size: 0.85rem; color: #94a3b8; margin: 0; padding-left: 20px;">
-                            <li>Jalankan <code>ngrok http 5000</code> di terminal.</li>
-                            <li>Arahkan request POST dari smartwatch/aplikasi ke
-                                <code>[URL_NGROK]/api/ecg_device</code>.</li>
-                            <li>Kirim payload JSON: <code>{"values": [0.5, 0.6, ...]}</code> berisi minimal 187 sample.
-                            </li>
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ROW 4: Info Panel -->
-        <section class="card card-info">
-            <div class="card-header">
-                <h2>ℹ️ Cara Kerja Sistem</h2>
-            </div>
-            <div class="info-body">
-                <div class="info-step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>⌚ Akuisisi Sinyal (Perangkat IoT)</h3>
-                        <p>Smartwatch (atau Wearable EKG) merekam sinyal jantung pasien secara kontinu dari lokasinya
-                            masing-masing.</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>🌐 Transmisi Internet/Cloud</h3>
-                        <p>Sinyal dikirim via jaringan nirkabel jarak jauh (Wi-Fi/Seluler) ke Cloud Server. Dalam
-                            simulasi ini, kita menguji ketahanan AI terhadap koneksi buruk (Noise dan Packet Loss).</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>🧠 Klasifikasi AI</h3>
-                        <p>Setiap detak jantung (beat) dianalisis menggunakan model AI — CNN (Deep Learning) atau SVM
-                            (Machine Learning) — untuk mendeteksi aritmia.</p>
-                    </div>
-                </div>
-                <div class="info-step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <h3>🖥️ Monitoring Real-Time</h3>
-                        <p>Hasil klasifikasi ditampilkan secara real-time di dashboard ini. Jika terdeteksi abnormal,
-                            sistem memberikan alert.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
-    <!-- Disclaimer Banner -->
-    <div class="dashboard" style="padding-top: 0;">
-        <div class="disclaimer-banner">
-            ⚠️ <strong>DISCLAIMER:</strong> Sistem ini merupakan <strong>simulasi untuk keperluan penelitian / skripsi</strong> 
-            dan <strong>BUKAN</strong> alat diagnosa medis resmi. Hasil klasifikasi AI tidak boleh digunakan sebagai dasar 
-            keputusan klinis tanpa pengawasan tenaga medis profesional.
+    <!-- RIGHT SIDEBAR (Alert Center) -->
+    <aside class="right-sidebar" id="rightSidebar">
+        <div class="rs-header"><h2>Alert Center</h2></div>
+        
+        <!-- Info Aritmia Card -->
+        <div style="padding: 16px; margin: 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 16px;">
+            <h4 style="font-size: 0.8rem; font-weight: 800; color: #dc2626; margin-bottom: 8px;">ℹ️ Info Klinis: Aritmia</h4>
+            <p style="font-size: 0.7rem; color: #7f1d1d; line-height: 1.5; font-weight: 500;">
+                Kondisi saat detak jantung tidak normal (Normal: 60-100 BPM).<br><br>
+                • <strong>Takikardia:</strong> &gt; 100 BPM<br>
+                • <strong>Bradikardia:</strong> &lt; 60 BPM<br>
+                • <strong>Aritmia:</strong> Denyut ada jeda/tidak beraturan<br><br>
+                <em>Sistem akan otomatis mengirim peringatan Telegram ke pasien jika terdeteksi aritmia.</em>
+            </p>
         </div>
-    </div>
+        <div class="rs-alerts" id="rsAlerts">
+            <div class="rs-alert-item"><div class="rs-icon critical"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg></div><div class="rs-alert-body"><div class="rs-alert-meta"><span>System</span><span>--</span></div><p>Waiting for data stream...</p></div></div>
+        </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-        <p>Analisis Komparatif CNN vs SVM — Klasifikasi EKG Nirkabel | MIT-BIH Arrhythmia Database</p>
-    </footer>
+    </aside>
+</div>
 
-    <script src="/static/js/app.js"></script>
+<script src="/static/js/dashboard.js"></script>
+<script>function logout(){window.location.href='/logout';}</script>
 </body>
-
 </html>

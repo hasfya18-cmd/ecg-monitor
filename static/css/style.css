@@ -1,34 +1,34 @@
 /* ============================================================
-   ECG Monitor — Dark Medical Theme
+   ECG Monitor — Light Medical Theme (UpBeat-inspired)
    ============================================================ */
 
 :root {
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #111827;
-    --bg-card: rgba(17, 24, 39, 0.85);
-    --bg-card-hover: rgba(30, 41, 59, 0.9);
-    --border-color: rgba(56, 189, 248, 0.12);
-    --border-glow: rgba(56, 189, 248, 0.25);
+    --bg-primary: #f5f7fa;
+    --bg-secondary: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f4f8;
+    --border-color: #e2e8f0;
+    --border-glow: rgba(0, 114, 152, 0.25);
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
 
-    --ecg-green: #22d3ee;
-    --ecg-green-glow: rgba(34, 211, 238, 0.4);
-    --normal-color: #10b981;
-    --normal-bg: rgba(16, 185, 129, 0.1);
-    --abnormal-color: #ef4444;
-    --abnormal-bg: rgba(239, 68, 68, 0.1);
-    --warning-color: #f59e0b;
-    --accent: #3b82f6;
-    --accent-glow: rgba(59, 130, 246, 0.3);
+    --ecg-green: #007298;
+    --ecg-green-glow: rgba(0, 114, 152, 0.3);
+    --normal-color: #059669;
+    --normal-bg: rgba(5, 150, 105, 0.08);
+    --abnormal-color: #dc2626;
+    --abnormal-bg: rgba(220, 38, 38, 0.08);
+    --warning-color: #d97706;
+    --accent: #007298;
+    --accent-glow: rgba(0, 114, 152, 0.15);
 
     --font-main: 'Inter', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    --radius: 16px;
-    --radius-sm: 10px;
+    --radius: 12px;
+    --radius-sm: 8px;
 }
 
 * {
@@ -44,9 +44,7 @@ body {
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
-    background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
+    background-image: none;
 }
 
 /* ============================================================
@@ -57,8 +55,9 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 16px 32px;
-    background: rgba(17, 24, 39, 0.6);
-    backdrop-filter: blur(20px);
+    background: #ffffff;
+    backdrop-filter: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -100,7 +99,7 @@ body {
     color: var(--text-muted);
     font-weight: 400;
     padding: 4px 10px;
-    background: rgba(56, 189, 248, 0.06);
+    background: rgba(0, 114, 152, 0.06);
     border-radius: 20px;
     border: 1px solid var(--border-color);
 }
@@ -172,7 +171,7 @@ body {
     padding: 8px 18px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(0, 114, 152, 0.08);
     color: var(--accent);
     font-family: var(--font-main);
     font-size: 0.85rem;
@@ -182,7 +181,7 @@ body {
 }
 
 .btn-stream:hover {
-    background: rgba(59, 130, 246, 0.2);
+    background: rgba(0, 114, 152, 0.15);
     border-color: var(--accent);
 }
 
@@ -1244,4 +1243,188 @@ body {
     .comp-column { padding: 14px; }
     .comp-model-icon { font-size: 1.2rem; }
     .comp-model-name { font-size: 1rem; }
+    .patients-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ============================================================
+   PATIENT SELECTOR PANEL
+   ============================================================ */
+.card-patients { grid-column: 1 / -1; }
+
+.patients-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    padding: 16px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.patient-card {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.patient-card:hover {
+    background: rgba(56, 189, 248, 0.08);
+    border-color: rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
+}
+
+.patient-card.active {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: #22d3ee;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2), inset 0 0 20px rgba(34, 211, 238, 0.05);
+}
+
+.patient-card.active::before {
+    content: '▶';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 0.6rem;
+    color: #22d3ee;
+}
+
+.patient-id {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.patient-rate {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.rate-high { color: #ef4444; }
+.rate-mid { color: #f59e0b; }
+.rate-low { color: #10b981; }
+
+.patient-info {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.patient-loading {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.meta-tag-patient {
+    background: rgba(0, 114, 152, 0.15) !important;
+    color: #007298 !important;
+    font-weight: 600;
+}
+
+/* ============================================================
+   TABS NAVIGATION
+   ============================================================ */
+.tabs-nav {
+    display: flex;
+    gap: 8px;
+    padding: 16px 32px 0 32px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-main);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: var(--accent);
+    background: rgba(0, 114, 152, 0.05);
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.patient-meta-details {
+    padding: 20px;
+    background: var(--bg-card-hover);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.patient-meta-details strong {
+    color: var(--text-primary);
+}
+
+/* Analysis Status Pill */
+.analysis-status-pill {
+    background: var(--bg-soft);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.analysis-status-pill.processing {
+    color: #b45309;
+    background: #fffbeb;
+    border-color: #f59e0b;
+    animation: pulse-status 1.5s infinite;
+}
+
+.analysis-status-pill.ready {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #10b981;
+}
+
+@keyframes pulse-status {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }

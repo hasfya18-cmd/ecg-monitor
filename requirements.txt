@@ -1,9 +1,12 @@
 flask
-numpy
-scipy
-scikit-learn
-tensorflow
+numpy==2.2.6
+scipy==1.15.3
+scikit-learn==1.7.2
+tensorflow==2.20.0
 wfdb
-joblib
+joblib==1.5.3
 matplotlib
 gunicorn
+requests
+cryptography
+google-auth
