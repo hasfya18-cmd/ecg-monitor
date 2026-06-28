@@ -751,19 +751,39 @@ def send_telegram_alert(patient_id, bpm, confidence, arrhythmia_type="Abnormal",
         print(f"[TELEGRAM] No targets for {patient_id}, skipping.")
         return False
     
-    # Queue message for browser-side dispatch (bypasses HF outbound blocks)
-    outbox_item = {
-        'id': int(time.time() * 1000),
-        'targets': list(targets),
-        'token': token,
-        'api_url': api_url,
-        'message': message,
-        'patient_id': patient_id,
-        'timestamp': get_wib_time().strftime('%H:%M:%S WIB')
-    }
-    with telegram_outbox_lock:
-        telegram_outbox.append(outbox_item)
-    print(f"[TELEGRAM] Alert for {patient_id} queued for browser dispatch -> targets: {targets}")
+    url = f"{api_url}/bot{token}/sendMessage"
+    
+    def _send():
+        success = False
+        for cid in targets:
+            try:
+                res = requests.post(url, json={
+                    "chat_id": cid,
+                    "text": message,
+                    "parse_mode": "Markdown"
+                }, timeout=10)
+                print(f"[TELEGRAM] Sent to {cid}: HTTP {res.status_code}")
+                if res.status_code == 200:
+                    success = True
+            except Exception as e:
+                print(f"[TELEGRAM] Exception sending to {cid}: {e}")
+        
+        if not success:
+            # Fallback: queue for browser-side dispatch (for HF Spaces compatibility)
+            outbox_item = {
+                'id': int(time.time() * 1000),
+                'targets': list(targets),
+                'token': token,
+                'api_url': api_url,
+                'message': message,
+                'patient_id': patient_id,
+                'timestamp': get_wib_time().strftime('%H:%M:%S WIB')
+            }
+            with telegram_outbox_lock:
+                telegram_outbox.append(outbox_item)
+            print(f"[TELEGRAM] Direct send failed, queued for browser fallback -> {patient_id}")
+    
+    threading.Thread(target=_send, daemon=True).start()
     return True
 
 # ============================================================
