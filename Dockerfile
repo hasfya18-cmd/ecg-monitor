@@ -13,6 +13,6 @@ COPY . .
 # Ensure data directory exists and has full write permissions for any user UID
 RUN mkdir -p /app/data && chmod -R 777 /app /app/data
 
-# Command to run the application using Gunicorn, dynamically reading PORT env var
-CMD gunicorn -w 1 --threads 8 -b 0.0.0.0:${PORT:-7860} app:app --timeout 120
+# Command to run the application using Gunicorn, wrapped in a shell to expand PORT variable
+CMD ["sh", "-c", "gunicorn -w 1 --threads 8 -b 0.0.0.0:${PORT:-7860} app:app --timeout 120"]
 
